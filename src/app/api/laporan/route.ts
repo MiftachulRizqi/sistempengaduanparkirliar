@@ -20,6 +20,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // ========================
+    // UPLOAD KE SUPABASE
+    // ========================
     const bytes = await foto.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -44,12 +47,18 @@ export async function POST(req: Request) {
       );
     }
 
+    // ========================
+    // AMBIL URL FOTO
+    // ========================
     const { data: publicUrlData } = supabaseAdmin.storage
       .from("uploads")
       .getPublicUrl(filePath);
 
     const fotoUrl = publicUrlData.publicUrl;
 
+    // ========================
+    // SIMPAN KE DATABASE
+    // ========================
     const { data, error } = await supabaseAdmin
       .from("laporan")
       .insert({
