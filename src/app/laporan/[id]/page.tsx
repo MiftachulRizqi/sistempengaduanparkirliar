@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import Link from "next/link";
+import { supabaseAdmin } from "@/lib/supabaseServer";
 
 type Laporan = {
   id: number;
@@ -9,6 +8,7 @@ type Laporan = {
   deskripsi: string;
   foto: string;
   status: string;
+  created_at?: string;
 };
 
 export default async function DetailLaporan({
@@ -18,26 +18,32 @@ export default async function DetailLaporan({
 }) {
   const { id } = await params;
 
-  const filePath = path.join(process.cwd(), "src/data/laporan.json");
-  const data: Laporan[] = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  const { data: laporan, error } = await supabaseAdmin
+    .from("laporan")
+    .select("*")
+    .eq("id", Number(id))
+    .single();
 
-  const laporan = data.find((item) => item.id === Number(id));
-
-  if (!laporan) {
+  if (error || !laporan) {
     return (
       <div className="container py-5 text-center">
-        <h1 className="fw-bold text-danger">Laporan tidak ditemukan</h1>
-        <Link href="/services" className="btn btn-danger mt-3">
+        <h1 className="fw-bold text-danger mb-3">
+          Laporan tidak ditemukan
+        </h1>
+
+        <Link href="/services" className="btn btn-danger">
           Kembali ke Services
         </Link>
       </div>
     );
   }
 
+  const item = laporan as Laporan;
+
   const statusClass =
-    laporan.status === "Selesai"
+    item.status === "Selesai"
       ? "bg-success"
-      : laporan.status === "Diproses"
+      : item.status === "Diproses"
       ? "bg-warning text-dark"
       : "bg-secondary";
 
@@ -48,8 +54,8 @@ export default async function DetailLaporan({
           <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
             <div className="position-relative">
               <img
-                src={laporan.foto}
-                alt={laporan.lokasi}
+                src={item.foto}
+                alt={item.lokasi}
                 className="w-100"
                 style={{
                   height: "420px",
@@ -67,10 +73,10 @@ export default async function DetailLaporan({
 
               <div className="position-absolute bottom-0 start-0 p-4 text-white">
                 <span className={`badge ${statusClass} px-3 py-2 mb-3`}>
-                  {laporan.status}
+                  {item.status}
                 </span>
 
-                <h1 className="fw-bold mb-0">{laporan.lokasi}</h1>
+                <h1 className="fw-bold mb-0">{item.lokasi}</h1>
               </div>
             </div>
 
@@ -79,14 +85,16 @@ export default async function DetailLaporan({
                 <p className="text-uppercase text-muted small fw-bold mb-1">
                   Nama Pelapor
                 </p>
-                <h5 className="fw-semibold">{laporan.nama}</h5>
+                <h5 className="fw-semibold">{item.nama}</h5>
               </div>
 
               <div className="mb-4">
                 <p className="text-uppercase text-muted small fw-bold mb-2">
                   Deskripsi Laporan
                 </p>
-                <p className="fs-5 text-muted lh-lg">{laporan.deskripsi}</p>
+                <p className="fs-5 text-muted lh-lg">
+                  {item.deskripsi}
+                </p>
               </div>
 
               <hr />
@@ -95,7 +103,10 @@ export default async function DetailLaporan({
                 <Link href="/services" className="btn btn-outline-secondary px-4">
                   ← Kembali
                 </Link>
-                
+
+                <Link href="/services" className="btn btn-danger px-4">
+                  Kembali ke Services
+                </Link>
               </div>
             </div>
           </div>
