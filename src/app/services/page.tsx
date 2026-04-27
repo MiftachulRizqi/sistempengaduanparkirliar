@@ -1,31 +1,40 @@
 import MapLaporanClient from "@/components/MapLaporanClient";
 import Link from "next/link";
 
-export default async function Services() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+async function getLaporan() {
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000");
 
-  const res = await fetch(`${baseUrl}/api/laporan/list`, {
-    cache: "no-store",
-  });
+    const res = await fetch(`${baseUrl}/api/laporan/list`, {
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    throw new Error("Gagal mengambil data laporan");
+    if (!res.ok) {
+      return [];
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Gagal mengambil laporan:", error);
+    return [];
   }
+}
 
-  const laporan = await res.json();
+export default async function Services() {
+  const laporan = await getLaporan();
 
   return (
     <section className="py-5 bg-light">
       <div className="container text-center">
-
-        {/* TITLE */}
         <h1 className="fw-bold mb-2">Layanan Kami</h1>
         <p className="text-muted mb-5">
           Fitur lengkap untuk memudahkan pelaporan parkir liar
         </p>
 
-        {/* FITUR */}
         <div className="row g-4 mb-5">
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
@@ -49,12 +58,7 @@ export default async function Services() {
 
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/PANTAU STATUS.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Pantau Status"
-              />
+              <img src="/image/PANTAU STATUS.png" className="mx-auto mb-3" width="80" alt="Status" />
               <h5 className="fw-semibold">Pantau Status</h5>
               <p className="text-muted small">
                 Lihat perkembangan status laporan secara real-time.
@@ -63,81 +67,40 @@ export default async function Services() {
           </div>
         </div>
 
-        {/* CARA KERJA */}
         <h2 className="fw-bold mb-4">Cara Kerja</h2>
 
         <div className="row g-4 mb-5">
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
-              <span
-                className="badge bg-danger rounded-circle mb-3"
-                style={{ width: "35px", height: "35px" }}
-              >
-                1
-              </span>
-              <img src="/image/NOTE.png" className="mx-auto mb-3" width="70" alt="Note" />
-              <h6 className="fw-semibold">Isi Laporan</h6>
-              <p className="text-muted small">
-                Tentukan lokasi dan detail pelanggaran parkir liar.
-              </p>
+          {[
+            ["1", "/image/NOTE.png", "Isi Laporan", "Tentukan lokasi dan detail pelanggaran parkir liar."],
+            ["2", "/image/VERIFIKASI.png", "Proses Verifikasi", "Laporan diverifikasi oleh petugas terkait."],
+            ["3", "/image/TINDAK LANJUT.png", "Tindak Lanjut", "Kami tindak lanjuti laporan hingga selesai."],
+          ].map((item) => (
+            <div className="col-md-4" key={item[0]}>
+              <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
+                <span
+                  className="badge bg-danger rounded-circle mb-3"
+                  style={{ width: "35px", height: "35px" }}
+                >
+                  {item[0]}
+                </span>
+                <img src={item[1]} className="mx-auto mb-3" width="70" alt={item[2]} />
+                <h6 className="fw-semibold">{item[2]}</h6>
+                <p className="text-muted small">{item[3]}</p>
+              </div>
             </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
-              <span
-                className="badge bg-danger rounded-circle mb-3"
-                style={{ width: "35px", height: "35px" }}
-              >
-                2
-              </span>
-              <img
-                src="/image/VERIFIKASI.png"
-                className="mx-auto mb-3"
-                width="70"
-                alt="Verifikasi"
-              />
-              <h6 className="fw-semibold">Proses Verifikasi</h6>
-              <p className="text-muted small">
-                Laporan diverifikasi oleh petugas terkait.
-              </p>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
-              <span
-                className="badge bg-danger rounded-circle mb-3"
-                style={{ width: "35px", height: "35px" }}
-              >
-                3
-              </span>
-              <img
-                src="/image/TINDAK LANJUT.png"
-                className="mx-auto mb-3"
-                width="70"
-                alt="Tindak Lanjut"
-              />
-              <h6 className="fw-semibold">Tindak Lanjut</h6>
-              <p className="text-muted small">
-                Kami tindak lanjuti laporan hingga selesai.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* MAP */}
         <div className="card border-0 shadow-sm p-4 mb-5">
           <h5 className="fw-bold mb-3">Peta Laporan Parkir</h5>
 
           {laporan.length === 0 ? (
-            <p className="text-muted">Belum ada laporan</p>
+            <p className="text-muted">Belum ada laporan atau data gagal dimuat.</p>
           ) : (
             <MapLaporanClient data={laporan} />
           )}
         </div>
 
-        {/* DATA LAPORAN */}
         <div className="card border-0 shadow-sm p-4">
           <h5 className="fw-bold mb-3">Data Laporan</h5>
 
@@ -156,9 +119,7 @@ export default async function Services() {
                     alt={item.lokasi}
                   />
 
-                  <h6 className="fw-semibold text-danger">
-                    {item.lokasi}
-                  </h6>
+                  <h6 className="fw-semibold text-danger">{item.lokasi}</h6>
 
                   <p
                     className="text-muted small"
@@ -190,7 +151,6 @@ export default async function Services() {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
