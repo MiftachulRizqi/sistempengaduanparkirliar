@@ -20,18 +20,20 @@ export async function POST(req: Request) {
       );
     }
 
+    // ========================
+    // UPLOAD KE SUPABASE
+    // ========================
     const bytes = await foto.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const safeFileName = foto.name.replace(/\s+/g, "-");
-    const fileName = `${Date.now()}-${safeFileName}`;
+    const safeName = foto.name.replace(/\s+/g, "-");
+    const fileName = `${Date.now()}-${safeName}`;
     const filePath = `laporan/${fileName}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from("uploads")
       .upload(filePath, buffer, {
         contentType: foto.type || "image/jpeg",
-        upsert: false,
       });
 
     if (uploadError) {
@@ -45,13 +47,19 @@ export async function POST(req: Request) {
       );
     }
 
+    // ========================
+    // AMBIL URL FOTO
+    // ========================
     const { data: publicUrlData } = supabaseAdmin.storage
       .from("uploads")
       .getPublicUrl(filePath);
 
     const fotoUrl = publicUrlData.publicUrl;
 
-    const { data, error: insertError } = await supabaseAdmin
+    // ========================
+    // SIMPAN KE DATABASE
+    // ========================
+    const { data, error } = await supabaseAdmin
       .from("laporan")
       .insert({
         nama,
@@ -63,12 +71,12 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (insertError) {
+    if (error) {
       return NextResponse.json(
         {
           success: false,
-          message: "Gagal menyimpan laporan",
-          error: insertError.message,
+          message: "Gagal menyimpan data",
+          error: error.message,
         },
         { status: 500 }
       );
