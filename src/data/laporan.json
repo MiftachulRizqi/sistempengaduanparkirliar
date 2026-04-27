@@ -30,5 +30,13 @@
     "deskripsi": "Banyak kendaraan parkir di bahu jalan yang menyebabkan kemacetan",
     "foto": "/uploads/1777300008500-gambar-parkir.jpg",
     "status": "Menunggu"
+  },
+  {
+    "id": 1777302246102,
+    "nama": "Kaiwi ",
+    "lokasi": "Jalan Plemahan IX, RW 09, Kedungdoro, Tegalsari, Surabaya, Jawa Timur, Jawa, 60261, Indonesia",
+    "deskripsi": "Parkir dibahu jalan menyebabkan kemacetan",
+    "foto": "/uploads/1777302246100-kk142561_clip10.jpg",
+    "status": "Menunggu"
   }
 ]
