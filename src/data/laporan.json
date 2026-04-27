@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1777272465308,
+    "nama": "Miftachul Rizqi",
+    "lokasi": "Tunjungan Plaza TP 4, No.8-12, Jalan Tunjungan, RW 10, Kedungdoro, Tegalsari, Surabaya, Jawa, 60261, Indonesia",
+    "deskripsi": "Masih ada beberapa oknum yang menyediakan jasa parkir di bahu jalan jalan tunjungan plaza menyebabkan kemacetan",
+    "foto": "/uploads/1777272465305-Screenshot 2026-04-27 131106.png",
+    "status": "Menunggu"
+  },
+  {
+    "id": 1777273571996,
+    "nama": "Moch.Ilham Mushidiq",
+    "lokasi": "RW 05, Bulak Banteng, Kenjeran, Surabaya, Jawa Timur, Jawa, 60126, Indonesia",
+    "deskripsi": "Ada parkir liar yang menyebabkan kemacetan jalan",
+    "foto": "/uploads/1777273571995-parkir liar.png",
+    "status": "Menunggu"
+  },
+  {
+    "id": 1777279042964,
+    "nama": "Muhammad Roudho Brammastyo",
+    "lokasi": "Jalan Balongsari Krajan I, RW 07, Balongsari, Tandes, Surabaya, Jawa, 60184, Indonesia",
+    "deskripsi": "Parkir liar yang berada di bahu jalan menyebabkan kemacetan dan menggangu lalu lintas",
+    "foto": "/uploads/1777279042963-9d4bd9f4c0822a5f3e4687e197404422.jpg",
+    "status": "Menunggu"
+  },
+  {
+    "id": 1777300008503,
+    "nama": "Subagio Hartono",
+    "lokasi": "Jalan Satelit Indah I, RW 03, Tanjungsari, Sukomanunggal, Surabaya, Jawa Timur, Jawa, 60187, Indonesia",
+    "deskripsi": "Banyak kendaraan parkir di bahu jalan yang menyebabkan kemacetan",
+    "foto": "/uploads/1777300008500-gambar-parkir.jpg",
+    "status": "Menunggu"
+  }
+]
