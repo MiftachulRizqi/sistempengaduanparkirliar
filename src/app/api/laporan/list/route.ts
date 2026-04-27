@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { supabaseAdmin } from "@/lib/supabaseServer";
 
 export async function GET() {
   try {
-    const filePath = path.join(process.cwd(), "src/data/laporan.json");
+    const { data, error } = await supabaseAdmin
+      .from("laporan")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    if (error) {
+      return NextResponse.json([]);
+    }
 
-    return NextResponse.json(data);
-
+    return NextResponse.json(data || []);
   } catch (error) {
     return NextResponse.json([]);
   }
