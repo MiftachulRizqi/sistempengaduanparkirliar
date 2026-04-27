@@ -1,35 +1,22 @@
 import MapLaporanClient from "@/components/MapLaporanClient";
 import Link from "next/link";
-
-async function getLaporan() {
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
-
-    const res = await fetch(`${baseUrl}/api/laporan/list`, {
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      return [];
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("Gagal mengambil laporan:", error);
-    return [];
-  }
-}
+import { headers } from "next/headers";
 
 export default async function Services() {
-  const laporan = await getLaporan();
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+
+  const res = await fetch(`${protocol}://${host}/api/laporan/list`, {
+    cache: "no-store",
+  });
+
+  const laporan = await res.json();
 
   return (
     <section className="py-5 bg-light">
       <div className="container text-center">
+
         <h1 className="fw-bold mb-2">Layanan Kami</h1>
         <p className="text-muted mb-5">
           Fitur lengkap untuk memudahkan pelaporan parkir liar
@@ -83,7 +70,14 @@ export default async function Services() {
                 >
                   {item[0]}
                 </span>
-                <img src={item[1]} className="mx-auto mb-3" width="70" alt={item[2]} />
+
+                <img
+                  src={item[1]}
+                  className="mx-auto mb-3"
+                  width="70"
+                  alt={item[2]}
+                />
+
                 <h6 className="fw-semibold">{item[2]}</h6>
                 <p className="text-muted small">{item[3]}</p>
               </div>
@@ -95,7 +89,7 @@ export default async function Services() {
           <h5 className="fw-bold mb-3">Peta Laporan Parkir</h5>
 
           {laporan.length === 0 ? (
-            <p className="text-muted">Belum ada laporan atau data gagal dimuat.</p>
+            <p className="text-muted">Belum ada laporan</p>
           ) : (
             <MapLaporanClient data={laporan} />
           )}
@@ -105,7 +99,10 @@ export default async function Services() {
           <h5 className="fw-bold mb-3">Data Laporan</h5>
 
           <p className="text-muted">
-            Total: <span className="fw-bold text-danger">{laporan.length}</span>
+            Total:{" "}
+            <span className="fw-bold text-danger">
+              {laporan.length}
+            </span>
           </p>
 
           <div className="row g-3 mt-3">
@@ -119,7 +116,9 @@ export default async function Services() {
                     alt={item.lokasi}
                   />
 
-                  <h6 className="fw-semibold text-danger">{item.lokasi}</h6>
+                  <h6 className="fw-semibold text-danger">
+                    {item.lokasi}
+                  </h6>
 
                   <p
                     className="text-muted small"
@@ -151,6 +150,7 @@ export default async function Services() {
             ))}
           </div>
         </div>
+
       </div>
     </section>
   );
