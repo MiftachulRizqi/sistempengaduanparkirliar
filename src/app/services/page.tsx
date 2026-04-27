@@ -1,27 +1,18 @@
 import MapLaporanClient from "@/components/MapLaporanClient";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabaseServer";
 
 export default async function Services() {
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const { data: laporan, error } = await supabaseAdmin
+    .from("laporan")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  const res = await fetch(`${protocol}://${host}/api/laporan/list`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    return (
-      <section className="py-5">
-        <div className="container text-center">
-          <h3>Gagal memuat data laporan</h3>
-        </div>
-      </section>
-    );
+  if (error) {
+    console.error("Gagal mengambil laporan:", error.message);
   }
 
-  const laporan = await res.json();
+  const dataLaporan = laporan || [];
 
   return (
     <section className="py-5 bg-light">
@@ -34,12 +25,7 @@ export default async function Services() {
         <div className="row g-4 mb-5">
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/MAPS.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Maps"
-              />
+              <img src="/image/MAPS.png" className="mx-auto mb-3" width="80" alt="Maps" />
               <h5 className="fw-semibold">Lokasi Akurat</h5>
               <p className="text-muted small">
                 Tentukan lokasi pelanggaran dengan pin map yang akurat.
@@ -49,12 +35,7 @@ export default async function Services() {
 
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/KAMERA.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Kamera"
-              />
+              <img src="/image/KAMERA.png" className="mx-auto mb-3" width="80" alt="Kamera" />
               <h5 className="fw-semibold">Upload Foto</h5>
               <p className="text-muted small">
                 Lampirkan bukti foto kejadian di lokasi.
@@ -64,12 +45,7 @@ export default async function Services() {
 
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/PANTAU STATUS.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Status"
-              />
+              <img src="/image/PANTAU STATUS.png" className="mx-auto mb-3" width="80" alt="Status" />
               <h5 className="fw-semibold">Pantau Status</h5>
               <p className="text-muted small">
                 Lihat perkembangan status laporan secara real-time.
@@ -82,24 +58,9 @@ export default async function Services() {
 
         <div className="row g-4 mb-5">
           {[
-            [
-              "1",
-              "/image/NOTE.png",
-              "Isi Laporan",
-              "Tentukan lokasi dan detail pelanggaran parkir liar.",
-            ],
-            [
-              "2",
-              "/image/VERIFIKASI.png",
-              "Proses Verifikasi",
-              "Laporan diverifikasi oleh petugas terkait.",
-            ],
-            [
-              "3",
-              "/image/TINDAK LANJUT.png",
-              "Tindak Lanjut",
-              "Kami tindak lanjuti laporan hingga selesai.",
-            ],
+            ["1", "/image/NOTE.png", "Isi Laporan", "Tentukan lokasi dan detail pelanggaran parkir liar."],
+            ["2", "/image/VERIFIKASI.png", "Proses Verifikasi", "Laporan diverifikasi oleh petugas terkait."],
+            ["3", "/image/TINDAK LANJUT.png", "Tindak Lanjut", "Kami tindak lanjuti laporan hingga selesai."],
           ].map((item) => (
             <div className="col-md-4" key={item[0]}>
               <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
@@ -110,12 +71,7 @@ export default async function Services() {
                   {item[0]}
                 </span>
 
-                <img
-                  src={item[1]}
-                  className="mx-auto mb-3"
-                  width="70"
-                  alt={item[2]}
-                />
+                <img src={item[1]} className="mx-auto mb-3" width="70" alt={item[2]} />
 
                 <h6 className="fw-semibold">{item[2]}</h6>
                 <p className="text-muted small">{item[3]}</p>
@@ -127,10 +83,10 @@ export default async function Services() {
         <div className="card border-0 shadow-sm p-4 mb-5">
           <h5 className="fw-bold mb-3">Peta Laporan Parkir</h5>
 
-          {laporan.length === 0 ? (
+          {dataLaporan.length === 0 ? (
             <p className="text-muted">Belum ada laporan</p>
           ) : (
-            <MapLaporanClient data={laporan} />
+            <MapLaporanClient data={dataLaporan} />
           )}
         </div>
 
@@ -139,11 +95,11 @@ export default async function Services() {
 
           <p className="text-muted">
             Total:{" "}
-            <span className="fw-bold text-danger">{laporan.length}</span>
+            <span className="fw-bold text-danger">{dataLaporan.length}</span>
           </p>
 
           <div className="row g-3 mt-3">
-            {laporan.map((item: any) => (
+            {dataLaporan.map((item: any) => (
               <div className="col-md-4" key={item.id}>
                 <div className="card h-100 border-0 shadow-sm p-3 text-start d-flex flex-column">
                   <img
