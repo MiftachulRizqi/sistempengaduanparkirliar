@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import MapLaporanClient from "@/components/MapLaporanClient";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
@@ -7,10 +10,6 @@ export default async function Services() {
     .from("laporan")
     .select("*")
     .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Gagal mengambil laporan:", error.message);
-  }
 
   const dataLaporan = laporan || [];
 
