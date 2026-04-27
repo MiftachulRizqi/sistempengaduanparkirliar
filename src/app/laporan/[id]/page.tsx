@@ -18,100 +18,84 @@ export default async function DetailLaporan({
 }) {
   const { id } = await params;
 
-  const { data: laporan, error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("laporan")
     .select("*")
     .eq("id", Number(id))
     .single();
 
-  if (error || !laporan) {
+  if (error || !data) {
     return (
-      <div className="container py-5 text-center">
-        <h1 className="fw-bold text-danger mb-3">
-          Laporan tidak ditemukan
-        </h1>
-
-        <Link href="/services" className="btn btn-danger">
-          Kembali ke Services
-        </Link>
-      </div>
+      <section className="laporan-detail-section">
+        <div className="container">
+          <div className="laporan-not-found">
+            <h1>Laporan tidak ditemukan</h1>
+            <Link href="/services" className="btn-detail-primary">
+              Kembali ke Services
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
-  const item = laporan as Laporan;
+  const laporan = data as Laporan;
 
   const statusClass =
-    item.status === "Selesai"
-      ? "bg-success"
-      : item.status === "Diproses"
-      ? "bg-warning text-dark"
-      : "bg-secondary";
+    laporan.status === "Selesai"
+      ? "status-success"
+      : laporan.status === "Diproses"
+      ? "status-process"
+      : "status-waiting";
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-lg-9">
-          <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
-            <div className="position-relative">
-              <img
-                src={item.foto}
-                alt={item.lokasi}
-                className="w-100"
-                style={{
-                  height: "420px",
-                  objectFit: "cover",
-                }}
-              />
+    <section className="laporan-detail-section">
+      <div className="container">
+        <div className="laporan-detail-card">
 
-              <div
-                className="position-absolute top-0 start-0 w-100 h-100"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.65))",
-                }}
-              />
+          <div className="laporan-image-box">
+            <img src={laporan.foto} alt={laporan.lokasi} />
 
-              <div className="position-absolute bottom-0 start-0 p-4 text-white">
-                <span className={`badge ${statusClass} px-3 py-2 mb-3`}>
-                  {item.status}
-                </span>
+            <span className={`laporan-status ${statusClass}`}>
+              {laporan.status}
+            </span>
+          </div>
 
-                <h1 className="fw-bold mb-0">{item.lokasi}</h1>
+          <div className="laporan-detail-content">
+            <span className="laporan-label">Detail Laporan Parkir</span>
+
+            <h1>{laporan.lokasi}</h1>
+
+            <div className="laporan-info-grid">
+              <div className="laporan-info-box">
+                <span>Nama Pelapor</span>
+                <strong>{laporan.nama}</strong>
+              </div>
+
+              <div className="laporan-info-box">
+                <span>Status Laporan</span>
+                <strong>{laporan.status}</strong>
               </div>
             </div>
 
-            <div className="card-body p-4 p-md-5">
-              <div className="mb-4">
-                <p className="text-uppercase text-muted small fw-bold mb-1">
-                  Nama Pelapor
-                </p>
-                <h5 className="fw-semibold">{item.nama}</h5>
-              </div>
+            <div className="laporan-description-box">
+              <span>Deskripsi Laporan</span>
+              <p>{laporan.deskripsi}</p>
+            </div>
 
-              <div className="mb-4">
-                <p className="text-uppercase text-muted small fw-bold mb-2">
-                  Deskripsi Laporan
-                </p>
-                <p className="fs-5 text-muted lh-lg">
-                  {item.deskripsi}
-                </p>
-              </div>
+            <div className="laporan-action">
+              <Link href="/services" className="btn-detail-secondary">
+                Kembali
+              </Link>
 
-              <hr />
-
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
-                <Link href="/services" className="btn btn-outline-secondary px-4">
-                  ← Kembali
-                </Link>
-
-                <Link href="/services" className="btn btn-danger px-4">
-                  Kembali ke Services
-                </Link>
-              </div>
+              <Link href="/contact" className="btn-detail-primary">
+                Buat Laporan Baru
+              </Link>
             </div>
           </div>
+
         </div>
       </div>
-    </div>
+    </section>
   );
 }
