@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { supabaseAdmin } from "@/lib/supabaseServer";
 
 export async function POST(req: Request) {
   try {
@@ -12,54 +11,82 @@ export async function POST(req: Request) {
     const foto = formData.get("foto") as File;
 
     if (!nama || !lokasi || !deskripsi || !foto) {
-      return NextResponse.json({
-        success: false,
-        message: "Data tidak lengkap"
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Data tidak lengkap",
+        },
+        { status: 400 }
+      );
     }
 
-    // ========================
-    // SIMPAN FOTO
-    // ========================
     const bytes = await foto.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const fileName = `${Date.now()}-${foto.name}`;
-    const uploadPath = path.join(process.cwd(), "public/uploads", fileName);
+    const safeFileName = foto.name.replace(/\s+/g, "-");
+    const fileName = `${Date.now()}-${safeFileName}`;
+    const filePath = `laporan/${fileName}`;
 
-    fs.writeFileSync(uploadPath, buffer);
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("uploads")
+      .upload(filePath, buffer, {
+        contentType: foto.type || "image/jpeg",
+        upsert: false,
+      });
 
-    // ========================
-    // SIMPAN DATA JSON
-    // ========================
-    const filePath = path.join(process.cwd(), "src/data/laporan.json");
+    if (uploadError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Gagal upload foto",
+          error: uploadError.message,
+        },
+        { status: 500 }
+      );
+    }
 
-    const existing = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("uploads")
+      .getPublicUrl(filePath);
 
-    const newData = {
-      id: Date.now(),
-      nama,
-      lokasi,
-      deskripsi,
-      foto: `/uploads/${fileName}`,
-      status: "Menunggu"
-    };
+    const fotoUrl = publicUrlData.publicUrl;
 
-    existing.push(newData);
+    const { data, error: insertError } = await supabaseAdmin
+      .from("laporan")
+      .insert({
+        nama,
+        lokasi,
+        deskripsi,
+        foto: fotoUrl,
+        status: "Menunggu",
+      })
+      .select()
+      .single();
 
-    fs.writeFileSync(filePath, JSON.stringify(existing, null, 2));
+    if (insertError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Gagal menyimpan laporan",
+          error: insertError.message,
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      data: newData
+      data,
     });
-
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json({
-      success: false,
-      message: "Server error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Server error",
+      },
+      { status: 500 }
+    );
   }
 }
