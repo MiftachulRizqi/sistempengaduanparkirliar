@@ -1,10 +1,17 @@
-import MapLaporan from "@/components/MapLaporan";
+import MapLaporanClient from "@/components/MapLaporanClient";
 import Link from "next/link";
 
 export default async function Services() {
-  const res = await fetch("http://localhost:3000/api/laporan/list", {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+  const res = await fetch(`${baseUrl}/api/laporan/list`, {
     cache: "no-store",
   });
+
+  if (!res.ok) {
+    throw new Error("Gagal mengambil data laporan");
+  }
 
   const laporan = await res.json();
 
@@ -22,7 +29,7 @@ export default async function Services() {
         <div className="row g-4 mb-5">
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img src="/image/MAPS.png" className="mx-auto mb-3" width="80" />
+              <img src="/image/MAPS.png" className="mx-auto mb-3" width="80" alt="Maps" />
               <h5 className="fw-semibold">Lokasi Akurat</h5>
               <p className="text-muted small">
                 Tentukan lokasi pelanggaran dengan pin map yang akurat.
@@ -32,7 +39,7 @@ export default async function Services() {
 
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img src="/image/KAMERA.png" className="mx-auto mb-3" width="80" />
+              <img src="/image/KAMERA.png" className="mx-auto mb-3" width="80" alt="Kamera" />
               <h5 className="fw-semibold">Upload Foto</h5>
               <p className="text-muted small">
                 Lampirkan bukti foto kejadian di lokasi.
@@ -42,7 +49,12 @@ export default async function Services() {
 
           <div className="col-md-4">
             <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img src="/image/PANTAU STATUS.png" className="mx-auto mb-3" width="80" />
+              <img
+                src="/image/PANTAU STATUS.png"
+                className="mx-auto mb-3"
+                width="80"
+                alt="Pantau Status"
+              />
               <h5 className="fw-semibold">Pantau Status</h5>
               <p className="text-muted small">
                 Lihat perkembangan status laporan secara real-time.
@@ -63,7 +75,7 @@ export default async function Services() {
               >
                 1
               </span>
-              <img src="/image/NOTE.png" className="mx-auto mb-3" width="70" />
+              <img src="/image/NOTE.png" className="mx-auto mb-3" width="70" alt="Note" />
               <h6 className="fw-semibold">Isi Laporan</h6>
               <p className="text-muted small">
                 Tentukan lokasi dan detail pelanggaran parkir liar.
@@ -79,7 +91,12 @@ export default async function Services() {
               >
                 2
               </span>
-              <img src="/image/VERIFIKASI.png" className="mx-auto mb-3" width="70" />
+              <img
+                src="/image/VERIFIKASI.png"
+                className="mx-auto mb-3"
+                width="70"
+                alt="Verifikasi"
+              />
               <h6 className="fw-semibold">Proses Verifikasi</h6>
               <p className="text-muted small">
                 Laporan diverifikasi oleh petugas terkait.
@@ -95,7 +112,12 @@ export default async function Services() {
               >
                 3
               </span>
-              <img src="/image/TINDAK LANJUT.png" className="mx-auto mb-3" width="70" />
+              <img
+                src="/image/TINDAK LANJUT.png"
+                className="mx-auto mb-3"
+                width="70"
+                alt="Tindak Lanjut"
+              />
               <h6 className="fw-semibold">Tindak Lanjut</h6>
               <p className="text-muted small">
                 Kami tindak lanjuti laporan hingga selesai.
@@ -111,7 +133,7 @@ export default async function Services() {
           {laporan.length === 0 ? (
             <p className="text-muted">Belum ada laporan</p>
           ) : (
-            <MapLaporan data={laporan} />
+            <MapLaporanClient data={laporan} />
           )}
         </div>
 
@@ -127,20 +149,17 @@ export default async function Services() {
             {laporan.map((item: any) => (
               <div className="col-md-4" key={item.id}>
                 <div className="card h-100 border-0 shadow-sm p-3 text-start d-flex flex-column">
-
-                  {/* IMAGE */}
                   <img
                     src={item.foto}
                     className="img-fluid rounded mb-2"
                     style={{ height: "150px", objectFit: "cover" }}
+                    alt={item.lokasi}
                   />
 
-                  {/* TITLE */}
                   <h6 className="fw-semibold text-danger">
                     {item.lokasi}
                   </h6>
 
-                  {/* DESKRIPSI (FIX HEIGHT) */}
                   <p
                     className="text-muted small"
                     style={{
@@ -154,7 +173,6 @@ export default async function Services() {
                     {item.deskripsi}
                   </p>
 
-                  {/* FOOTER (SELALU DI BAWAH) */}
                   <div className="mt-auto">
                     <span className="badge bg-secondary mb-2 d-block">
                       {item.status}
@@ -167,7 +185,6 @@ export default async function Services() {
                       Lihat Detail
                     </Link>
                   </div>
-
                 </div>
               </div>
             ))}
