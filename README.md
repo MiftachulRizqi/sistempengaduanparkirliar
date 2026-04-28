@@ -101,41 +101,70 @@ Menampilkan:
 
 ## 🏗️ Struktur Project
 
-src/
+```bash
+project-root/
 │
-├── app/
-│   ├── page.tsx
-│   ├── about/
-│   ├── services/
-│   ├── contact/
-│   ├── team/
-│   ├── laporan/
-│   │   └── [id]/
-│   └── layout.tsx
+├── public/
+│   └── image/
 │
-├── components/
-│   ├── Navbar.tsx
-│   ├── Footer.tsx
-│   ├── MapPicker.tsx
-│   └── MapLaporanClient.tsx
-│
-├── lib/
-│   └── supabaseServer.ts
-│
-├── styles/
-│   ├── globals.css
-│   ├── navbar.css
-│   ├── footer.css
-│   ├── home.css
-│   ├── services.css
-│   ├── contact.css
-│   ├── team.css
-│   └── laporan.css
-│
-└── data/
-    └── team.json
+├── src/
+│   ├── app/
+│   │   ├── about/
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── api/
+│   │   │   ├── laporan/
+│   │   │   │      └── list/
+│   │   │   │       └── route.ts
+│   │   │   └── route.ts
+│   │   │
+│   │   ├── contact/
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── laporan/
+│   │   │   └── [id]/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── services/
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── team/
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   │
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── components/
+│   │   ├── BootstrapClient.tsx
+│   │   ├── ClientCounter.tsx
+│   │   ├── Footer.tsx
+│   │   ├── MapComponent.tsx
+│   │   ├── MapLaporan.tsx
+│   │   ├── MapLaporanClient.tsx
+│   │   ├── MapPicker.tsx
+│   │   └── Navbar.tsx
+│   │
+│   ├── data/
+│   │   ├── laporan.json
+│   │   └── team.json
+│   │
+│   ├── lib/
+│   │   └──supabaseServer.ts
+│   │
+│   └── styles/
+│       ├── contact.css
+│       ├── footer.css
+│       ├── global.css
+│       ├── home.css
+│       ├── laporan.css
+│       ├── navbar.css
+│       ├── services.css
+│       └── team.css
+```
 
----
+```
 
 ## 🗄️ Struktur Data
 
@@ -224,6 +253,8 @@ public/
   services.png
   dashboard.png
 
+
+
 ---
 
 ## 📈 Pengembangan Selanjutnya
@@ -232,13 +263,28 @@ public/
 - [ ] Login Admin
 - [ ] Edit & delete laporan
 - [ ] Notifikasi laporan
-- [ ] Integrasi AI deteksi parkir liar
+- [ ] Dashboard Admin
 
 ---
 
 ## 👨‍💻 Developer
 
-Roudho Brammastyo
+**Kelompok 22 – Studi Independen PT VINIX7 AURUM**  
+
+💼 Divisi: Web Development & UI/UX  
+
+**Miftachul Rizqi**  
+Mahasiswa D4 Manajemen Informatika  
+Universitas Negeri Surabaya  
+
+**Muhammad Ilham Mushidiq**  
+Mahasiswa D4 Manajemen Informatika  
+Universitas Negeri Surabaya  
+
+**Mochammad Roudho Brammastyo**  
+Mahasiswa D4 Manajemen Informatika  
+Universitas Negeri Surabaya  
+
 
 ---
 
