@@ -1,5 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-import '../styles/global.css'
+import "@/styles/global.css";
+import "@/styles/navbar.css";
+import "@/styles/footer.css";
+import "@/styles/home.css";
+import "@/styles/services.css";
+import "@/styles/contact.css";
+import "@/styles/team.css";
+import "@/styles/laporan.css";
 import BootstrapClient from "../components/BootstrapClient";
 import 'leaflet/dist/leaflet.css'
 
