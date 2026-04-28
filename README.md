@@ -1,36 +1,255 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚗 Sistem Pengaduan Parkir Liar
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-green?logo=supabase)
+![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?logo=vercel)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
-First, run the development server:
+Website ini merupakan aplikasi berbasis web yang digunakan untuk memudahkan masyarakat dalam melaporkan pelanggaran parkir liar secara online dengan fitur lengkap seperti lokasi, foto, deskripsi, dan monitoring status laporan secara real-time.
 
-```bash
+---
+
+## 🌐 Live Demo
+
+🔗 https://sistempengaduanparkirliar.vercel.app  
+
+---
+
+## 🎯 Tujuan Sistem
+
+Sistem ini dibuat untuk:
+- Mempermudah masyarakat dalam melaporkan parkir liar
+- Membantu pihak terkait dalam monitoring laporan
+- Menyediakan sistem pelaporan berbasis digital yang cepat dan transparan
+
+---
+
+## ✨ Fitur Utama
+
+### 📍 Pelaporan Parkir Liar
+Pengguna dapat mengirim laporan dengan:
+- Nama pelapor
+- Lokasi kejadian (berbasis map)
+- Deskripsi kejadian
+- Upload foto bukti
+
+---
+
+### 🗺️ Peta Laporan
+- Menampilkan semua laporan dalam bentuk peta
+- Menggunakan Leaflet
+- Setiap laporan ditampilkan sebagai marker
+
+---
+
+### 📊 Dashboard Data Laporan (Premium UI)
+Menampilkan statistik:
+- Total laporan
+- Menunggu
+- Diproses
+- Selesai
+
+Dilengkapi dengan:
+- Glass effect
+- Gradient UI
+- Mini dashboard modern
+
+---
+
+### 📄 Detail Laporan (Dynamic Routing)
+Halaman dinamis:
+
+/laporan/[id]
+
+Menampilkan:
+- Foto laporan
+- Nama pelapor
+- Lokasi
+- Deskripsi
+- Status laporan
+
+---
+
+### ⚡ Real-time Data
+- Data diambil langsung dari Supabase
+- Sinkron otomatis antara frontend dan backend
+- Update data tanpa reload manual
+
+---
+
+### 📷 Upload Foto (Supabase Storage)
+- File gambar disimpan di Supabase Storage
+- URL gambar disimpan di database
+- Ditampilkan di halaman service & detail laporan
+
+---
+
+## 🧠 Teknologi yang Digunakan
+
+| Teknologi | Fungsi |
+|----------|--------|
+| Next.js (App Router) | Framework utama |
+| React | UI Library |
+| TypeScript | Type Safety |
+| Supabase | Backend (Database + Storage) |
+| Bootstrap 5 | Styling |
+| Leaflet | Peta |
+| Vercel | Deployment |
+
+---
+
+## 🏗️ Struktur Project
+
+src/
+│
+├── app/
+│   ├── page.tsx
+│   ├── about/
+│   ├── services/
+│   ├── contact/
+│   ├── team/
+│   ├── laporan/
+│   │   └── [id]/
+│   └── layout.tsx
+│
+├── components/
+│   ├── Navbar.tsx
+│   ├── Footer.tsx
+│   ├── MapPicker.tsx
+│   └── MapLaporanClient.tsx
+│
+├── lib/
+│   └── supabaseServer.ts
+│
+├── styles/
+│   ├── globals.css
+│   ├── navbar.css
+│   ├── footer.css
+│   ├── home.css
+│   ├── services.css
+│   ├── contact.css
+│   ├── team.css
+│   └── laporan.css
+│
+└── data/
+    └── team.json
+
+---
+
+## 🗄️ Struktur Data
+
+### Database (Supabase)
+
+Table: laporan
+
+| Field | Tipe |
+|------|------|
+| id | number |
+| nama | string |
+| lokasi | string |
+| deskripsi | string |
+| foto | string (URL) |
+| status | string |
+| created_at | timestamp |
+
+---
+
+### Storage (Supabase)
+
+uploads/
+└── laporan/
+    └── foto.png
+
+---
+
+## 🔌 API Endpoint
+
+### GET Laporan
+/api/laporan/list
+
+### POST Laporan
+/api/laporan
+
+---
+
+## ⚙️ Environment Variables
+
+Buat file `.env.local`
+
+NEXT_PUBLIC_SUPABASE_URL=your_url  
+SUPABASE_SERVICE_ROLE_KEY=your_key  
+
+---
+
+## ▶️ Cara Menjalankan Project
+
+### 1. Clone repository
+git clone https://github.com/username/repository.git
+
+### 2. Install dependency
+npm install
+
+### 3. Jalankan project
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Project ini di-deploy menggunakan:
 
-## Learn More
+Vercel
 
-To learn more about Next.js, take a look at the following resources:
+Setiap push ke GitHub akan otomatis deploy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎨 UI / UX Design
 
-## Deploy on Vercel
+- Glass effect modern UI
+- Gradient background
+- Dashboard statistik interaktif
+- Responsive (mobile friendly)
+- Clean & minimal design
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📸 Screenshot
+
+Tambahkan screenshot di folder:
+
+public/
+  home.png
+  services.png
+  dashboard.png
+
+---
+
+## 📈 Pengembangan Selanjutnya
+
+- [ ] Filter laporan berdasarkan status
+- [ ] Login Admin
+- [ ] Edit & delete laporan
+- [ ] Notifikasi laporan
+- [ ] Integrasi AI deteksi parkir liar
+
+---
+
+## 👨‍💻 Developer
+
+Roudho Brammastyo
+
+---
+
+## ⭐ Dukungan
+
+Jika project ini membantu:
+
+Berikan ⭐ di repository ini
+
+---
+
+## 📄 License
+
+Project ini dibuat untuk keperluan pembelajaran dan pengembangan sistem.
