@@ -42,7 +42,7 @@ function sanitizeFileName(fileName: string) {
 export async function createLaporanAction(
   _prevState: LaporanActionState,
   formData: FormData
-): Promise<LaporanAonsstionState> {
+): Promise<LaporanActionState> {
   try {
     const nama = String(formData.get("nama") || "").trim();
     const lokasi = String(formData.get("lokasi") || "").trim();
