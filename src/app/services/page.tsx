@@ -37,66 +37,70 @@ export default async function Services() {
     (item) => item.status === "Selesai"
   ).length;
 
+  const isSlider = dataLaporan.length > 6;
+
   return (
-    <section className="py-5 bg-light">
-      <div className="container text-center">
-        <h1 className="fw-bold mb-2">Layanan Kami</h1>
-        <p className="text-muted mb-5">
+    <section className="bg-gray-50 px-4 py-16 md:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl text-center">
+        <h1 className="mb-2 text-4xl font-extrabold text-gray-900 md:text-5xl">
+          Layanan Kami
+        </h1>
+
+        <p className="mb-12 text-sm leading-relaxed text-gray-500 md:text-base">
           Fitur lengkap untuk memudahkan pelaporan parkir liar
         </p>
 
         {/* FITUR */}
-        <div className="row g-4 mb-5">
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/MAPS.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Maps"
-              />
-              <h5 className="fw-semibold">Lokasi Akurat</h5>
-              <p className="text-muted small">
-                Tentukan lokasi pelanggaran dengan pin map yang akurat.
-              </p>
-            </div>
+        <div className="mb-14 grid gap-6 md:grid-cols-3">
+          <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
+            <img
+              src="/image/MAPS.png"
+              className="mx-auto mb-4 h-20 w-auto object-contain"
+              alt="Maps"
+            />
+            <h5 className="mb-2 text-lg font-bold text-gray-900">
+              Lokasi Akurat
+            </h5>
+            <p className="mb-0 text-sm leading-relaxed text-gray-500">
+              Tentukan lokasi pelanggaran dengan pin map yang akurat.
+            </p>
           </div>
 
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/KAMERA.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Kamera"
-              />
-              <h5 className="fw-semibold">Upload Foto</h5>
-              <p className="text-muted small">
-                Lampirkan bukti foto kejadian di lokasi.
-              </p>
-            </div>
+          <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
+            <img
+              src="/image/KAMERA.png"
+              className="mx-auto mb-4 h-20 w-auto object-contain"
+              alt="Kamera"
+            />
+            <h5 className="mb-2 text-lg font-bold text-gray-900">
+              Upload Foto
+            </h5>
+            <p className="mb-0 text-sm leading-relaxed text-gray-500">
+              Lampirkan bukti foto kejadian di lokasi.
+            </p>
           </div>
 
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm p-4 h-100 icon-box">
-              <img
-                src="/image/PANTAU STATUS.png"
-                className="mx-auto mb-3"
-                width="80"
-                alt="Status"
-              />
-              <h5 className="fw-semibold">Pantau Status</h5>
-              <p className="text-muted small">
-                Lihat perkembangan status laporan secara real-time.
-              </p>
-            </div>
+          <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
+            <img
+              src="/image/PANTAU STATUS.png"
+              className="mx-auto mb-4 h-20 w-auto object-contain"
+              alt="Status"
+            />
+            <h5 className="mb-2 text-lg font-bold text-gray-900">
+              Pantau Status
+            </h5>
+            <p className="mb-0 text-sm leading-relaxed text-gray-500">
+              Lihat perkembangan status laporan secara real-time.
+            </p>
           </div>
         </div>
 
         {/* CARA KERJA */}
-        <h2 className="fw-bold mb-4">Cara Kerja</h2>
+        <h2 className="mb-8 text-3xl font-extrabold text-gray-900 md:text-4xl">
+          Cara Kerja
+        </h2>
 
-        <div className="row g-4 mb-5">
+        <div className="mb-14 grid gap-6 md:grid-cols-3">
           {[
             [
               "1",
@@ -117,148 +121,191 @@ export default async function Services() {
               "Kami tindak lanjuti laporan hingga selesai.",
             ],
           ].map((item) => (
-            <div className="col-md-4" key={item[0]}>
-              <div className="card border-0 shadow-sm p-4 h-100 text-center icon-box">
-                <span
-                  className="badge bg-danger rounded-circle mb-3"
-                  style={{ width: "35px", height: "35px" }}
-                >
-                  {item[0]}
-                </span>
+            <div
+              className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]"
+              key={item[0]}
+            >
+              <span className="mx-auto mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white">
+                {item[0]}
+              </span>
 
-                <img
-                  src={item[1]}
-                  className="mx-auto mb-3"
-                  width="70"
-                  alt={item[2]}
-                />
+              <img
+                src={item[1]}
+                className="mx-auto mb-4 h-[70px] w-auto object-contain"
+                alt={item[2]}
+              />
 
-                <h6 className="fw-semibold">{item[2]}</h6>
-                <p className="text-muted small">{item[3]}</p>
-              </div>
+              <h6 className="mb-2 text-base font-bold text-gray-900">
+                {item[2]}
+              </h6>
+
+              <p className="mb-0 text-sm leading-relaxed text-gray-500">
+                {item[3]}
+              </p>
             </div>
           ))}
         </div>
 
         {/* MAP */}
-        <div className="card border-0 shadow-sm p-4 mb-5">
-          <h5 className="fw-bold mb-3">Peta Laporan Parkir</h5>
+        <div className="mb-14 rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
+          <h5 className="mb-4 text-lg font-bold text-gray-900">
+            Peta Laporan Parkir
+          </h5>
 
           {dataLaporan.length === 0 ? (
-            <p className="text-muted">Belum ada laporan</p>
+            <p className="mb-0 text-sm text-gray-500">Belum ada laporan</p>
           ) : (
             <MapLaporanClient data={dataLaporan} />
           )}
         </div>
 
         {/* DATA LAPORAN PREMIUM */}
-        <div className="report-premium-wrapper">
-          <div className="report-hero-panel">
-            <div className="report-hero-left">
-              <div className="report-main-icon">
+        <div className="rounded-[28px] bg-white p-5 text-left shadow-[0_20px_60px_rgba(0,0,0,0.07)] md:p-7">
+          <div className="mb-6 grid gap-5 rounded-[24px] bg-gradient-to-br from-red-50 via-white to-red-100 p-5 md:grid-cols-[1fr_auto] md:items-center md:p-7">
+            <div className="flex gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] border border-red-100 bg-red-50 text-3xl text-red-600 shadow-[0_14px_35px_rgba(220,38,38,0.16)]">
                 <i className="fa-regular fa-clipboard"></i>
               </div>
 
               <div>
-                <span className="report-live-badge">
-                  <span></span> LIVE DATA
+                <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-bold text-red-600">
+                  <span className="h-2 w-2 rounded-full bg-red-600"></span>
+                  LIVE DATA
                 </span>
 
-                <h5>
-                  Data <strong>Laporan Parkir</strong>
+                <h5 className="mb-3 text-3xl font-extrabold text-gray-900 md:text-4xl">
+                  Data <strong className="text-red-600">Laporan Parkir</strong>
                 </h5>
 
-                <p>
+                <p className="mb-5 max-w-2xl text-sm leading-relaxed text-gray-500 md:text-base">
                   Pantau laporan parkir liar yang telah dikirim oleh masyarakat
                   secara real-time dan transparan.
                 </p>
 
-                <div className="report-red-line"></div>
+                <div className="h-1 w-20 rounded-full bg-red-600"></div>
               </div>
             </div>
 
-            <div className="report-total-glass">
-              <div className="report-total-icon">
-                <i className="fa-solid fa-chart-pie"></i>
-              </div>
+            <div className="rounded-[24px] bg-white/80 p-5 shadow-[0_24px_60px_rgba(220,38,38,0.18)] backdrop-blur">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl text-red-600 shadow-[0_14px_35px_rgba(220,38,38,0.16)]">
+                  <i className="fa-solid fa-chart-pie"></i>
+                </div>
 
-              <div>
-                <span>Total Laporan</span>
-                <strong>{totalLaporan}</strong>
-                <p>
-                  <i className="fa-solid fa-arrow-trend-up"></i>
-                  Update terbaru
-                </p>
+                <div>
+                  <span className="text-sm font-bold text-gray-500">
+                    Total Laporan
+                  </span>
+                  <strong className="block text-5xl font-extrabold text-red-600">
+                    {totalLaporan}
+                  </strong>
+                  <p className="mb-0 text-sm text-gray-500">
+                    <i className="fa-solid fa-arrow-trend-up mr-1 text-green-500"></i>
+                    Update terbaru
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* MINI DASHBOARD */}
-          <div className="report-mini-dashboard">
-            <div className="report-stat-item">
-              <div className="report-stat-icon red">
+          <div className="mb-6 grid overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-[0_18px_45px_rgba(0,0,0,0.06)] sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 sm:border-r lg:border-b-0">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-red-50 text-2xl text-red-600">
                 <i className="fa-regular fa-clipboard"></i>
               </div>
               <div>
-                <strong>{totalLaporan}</strong>
-                <span>Total Laporan</span>
+                <strong className="block text-3xl font-extrabold text-red-600">
+                  {totalLaporan}
+                </strong>
+                <span className="text-sm font-semibold text-gray-500">
+                  Total Laporan
+                </span>
               </div>
             </div>
 
-            <div className="report-stat-item">
-              <div className="report-stat-icon yellow">
+            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 lg:border-b-0 lg:border-r">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-yellow-50 text-2xl text-yellow-500">
                 <i className="fa-regular fa-clock"></i>
               </div>
               <div>
-                <strong>{totalMenunggu}</strong>
-                <span>Menunggu</span>
+                <strong className="block text-3xl font-extrabold text-yellow-500">
+                  {totalMenunggu}
+                </strong>
+                <span className="text-sm font-semibold text-gray-500">
+                  Menunggu
+                </span>
               </div>
             </div>
 
-            <div className="report-stat-item">
-              <div className="report-stat-icon blue">
+            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 sm:border-r sm:border-b-0">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-blue-50 text-2xl text-blue-500">
                 <i className="fa-solid fa-hourglass-half"></i>
               </div>
               <div>
-                <strong>{totalDiproses}</strong>
-                <span>Diproses</span>
+                <strong className="block text-3xl font-extrabold text-blue-500">
+                  {totalDiproses}
+                </strong>
+                <span className="text-sm font-semibold text-gray-500">
+                  Diproses
+                </span>
               </div>
             </div>
 
-            <div className="report-stat-item">
-              <div className="report-stat-icon green">
+            <div className="flex items-center justify-center gap-4 p-5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-green-50 text-2xl text-green-500">
                 <i className="fa-regular fa-circle-check"></i>
               </div>
               <div>
-                <strong>{totalSelesai}</strong>
-                <span>Selesai</span>
+                <strong className="block text-3xl font-extrabold text-green-500">
+                  {totalSelesai}
+                </strong>
+                <span className="text-sm font-semibold text-gray-500">
+                  Selesai
+                </span>
               </div>
             </div>
           </div>
 
           {/* CARD LAPORAN */}
-          <div className="row g-4">
+          <div
+            className={
+              isSlider
+                ? "flex gap-6 overflow-x-auto pb-4"
+                : "grid gap-6 md:grid-cols-3"
+            }
+          >
             {dataLaporan.map((item) => (
-              <div className="col-md-4" key={item.id}>
-                <div className="report-premium-card h-100">
-                  <img
-                    src={item.foto || "/image/default.png"}
-                    alt={item.lokasi}
-                  />
+              <div
+                className={`flex h-full flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.28)] ${
+                  isSlider ? "min-w-[310px] md:min-w-[360px]" : ""
+                }`}
+                key={item.id}
+              >
+                <img
+                  src={item.foto || "/image/default.png"}
+                  alt={item.lokasi}
+                  className="h-48 w-full object-cover"
+                />
 
-                  <div className="report-premium-body">
-                    <h6>
-                      <i className="fa-solid fa-location-dot"></i>
-                      {item.lokasi}
-                    </h6>
+                <div className="flex flex-1 flex-col p-5">
+                  <h6 className="mb-2 flex min-h-[48px] items-start gap-2 text-base font-bold leading-snug text-gray-900">
+                    <i className="fa-solid fa-location-dot mt-1 shrink-0 text-red-600"></i>
+                    <span className="line-clamp-2">{item.lokasi}</span>
+                  </h6>
 
-                    <p>{item.deskripsi}</p>
+                  <p className="mb-4 min-h-[72px] line-clamp-3 text-sm leading-relaxed text-gray-500">
+                    {item.deskripsi}
+                  </p>
 
-                    <span className="report-status-pill">{item.status}</span>
+                  <div className="mt-auto">
+                    <span className="mb-4 inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
+                      {item.status}
+                    </span>
 
                     <Link
                       href={`/laporan/${item.id}`}
-                      className="report-premium-btn"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white !no-underline transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
                     >
                       Lihat Detail <i className="fa-solid fa-arrow-right"></i>
                     </Link>
@@ -268,8 +315,10 @@ export default async function Services() {
             ))}
 
             {dataLaporan.length === 0 && (
-              <div className="col-12">
-                <p className="text-muted mb-0">Belum ada data laporan.</p>
+              <div className="md:col-span-3">
+                <p className="mb-0 text-center text-sm text-gray-500">
+                  Belum ada data laporan.
+                </p>
               </div>
             )}
           </div>

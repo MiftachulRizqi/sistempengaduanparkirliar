@@ -1,187 +1,110 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 
 export default function Home() {
-
-  useEffect(() => {
-
-    // INTERSECTION OBSERVER
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateStats();
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.5 });
-
-    const statistikSection = document.getElementById('statistik');
-    if (statistikSection) observer.observe(statistikSection);
-
-    function animateStats() {
-      const stats = [
-        { id: 'count1', target: 120, duration: 2000 },
-        { id: 'count2', target: 80, duration: 2000 },
-        { id: 'count3', target: 40, duration: 2000 }
-      ];
-
-      stats.forEach((stat, index) => {
-        const element = document.getElementById(stat.id);
-        const circles = document.querySelectorAll<SVGCircleElement>('.progress-circle');
-        const progressCircle = circles[index];
-
-        if (!element || !progressCircle) return;
-
-        let start = 0;
-        const increment = Math.ceil(stat.target / (stat.duration / 16));
-
-        const counter = setInterval(() => {
-          start += increment;
-          if (start >= stat.target) {
-            start = stat.target;
-            clearInterval(counter);
-          }
-          element.textContent = String(start);
-        }, 16);
-
-        const max = 120;
-        const percentage = (stat.target / max) * 100;
-        const offset = 440 - (440 * percentage / 100);
-
-        setTimeout(() => {
-          progressCircle.style.strokeDashoffset = String(offset);
-        }, 300);
-      });
-    }
-
-    // TOGGLE ICON
-    const btnIcon = document.getElementById('btnIcon');
-    const formLaporan = document.getElementById('formLaporan');
-
-    const showHandler = () => {
-      btnIcon?.classList.replace('fa-chevron-down', 'fa-chevron-up');
-    };
-
-    const hideHandler = () => {
-      btnIcon?.classList.replace('fa-chevron-up', 'fa-chevron-down');
-    };
-
-    formLaporan?.addEventListener('show.bs.collapse', showHandler);
-    formLaporan?.addEventListener('hide.bs.collapse', hideHandler);
-
-    // NAV ACTIVE
-    const navLinks = document.querySelectorAll<HTMLElement>('.nav-link');
-
-    const navHandler = (e: Event) => {
-      navLinks.forEach(l => l.classList.remove('active'));
-      (e.currentTarget as HTMLElement).classList.add('active');
-    };
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', navHandler);
-    });
-
-    // BUTTON SCROLL
-    const btnLapor = document.getElementById('btn-lapor');
-
-    const scrollHandler = () => {
-      window.location.href = '#cta-section';
-    };
-
-    btnLapor?.addEventListener('click', scrollHandler);
-
-    // CLEANUP (PENTING 🔥)
-    return () => {
-      observer.disconnect();
-
-      formLaporan?.removeEventListener('show.bs.collapse', showHandler);
-      formLaporan?.removeEventListener('hide.bs.collapse', hideHandler);
-
-      navLinks.forEach(link => {
-        link.removeEventListener('click', navHandler);
-      });
-
-      btnLapor?.removeEventListener('click', scrollHandler);
-    };
-
-  }, []);
-
   return (
     <main>
-
       {/* HERO */}
-      <section className="hero" id="hero">
-        <div className="container">
-          <div className="row align-items-center">
+      <section
+        id="hero"
+        className="relative overflow-hidden bg-white px-4 pt-10 pb-16 md:px-6 md:pt-14 md:pb-20 lg:px-8"
+      >
+        <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-red-100/60 blur-3xl" />
+        <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-gray-100 blur-3xl" />
 
-            <div className="col-lg-6">
-              <h1 className="display-4 fw-bold mb-4">
-                Laporkan Parkir Liar<br />dengan <span className="text-danger">Mudah & Cepat</span>
-              </h1>
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
+          <div>
+            <h1 className="mb-6 text-4xl font-extrabold leading-tight text-gray-900 md:text-5xl lg:text-6xl">
+              Laporkan Parkir Liar
+              <br />
+              dengan{" "}
+              <span className="text-red-600">
+                Mudah & Cepat
+              </span>
+            </h1>
 
-              <p className="lead mb-5 moto">
-                Bantu ciptakan jalan yang tertib dan nyaman untuk semua pengguna jalan
-              </p>
+            <p className="mb-8 max-w-xl text-base leading-relaxed text-gray-500 md:text-lg">
+              Bantu ciptakan jalan yang tertib dan nyaman untuk semua pengguna
+              jalan.
+            </p>
 
-              <div className="d-flex gap-3">
-                <Link href="/contact" className="btn btn-lapor btn-lg">
-                  Laporkan Sekarang
-                </Link>
-                <Link href="/services" className="btn btn-outline-danger btn-lihat btn-lg">
-                  Lihat Laporan
-                </Link>
-              </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Link
+                href="/contact"
+                className="w-full inline-flex items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
+              >
+                Laporkan Sekarang
+              </Link>
+
+              <Link
+                href="/services"
+                className="w-full inline-flex items-center justify-center rounded-lg border border-red-600 px-6 py-3 text-sm font-bold text-red-600 !no-underline transition-colors duration-300 hover:bg-red-600 hover:text-white hover:!no-underline"
+              >
+                Lihat Laporan
+              </Link>
             </div>
+          </div>
 
-            <div className="col-lg-6 text-center">
-              <img
-                src="/image/Asset 1jukir 1.png"
-                className="img-fluid"
-                style={{ maxHeight: "420px" }}
-                alt="Ilustrasi Parkir"
-              />
-            </div>
-
+          <div className="flex justify-center lg:justify-end">
+            <img
+              src="/image/Asset 1jukir 1.png"
+              alt="Ilustrasi Parkir"
+              className="max-h-[420px] w-full max-w-[520px] object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.12)]"
+            />
           </div>
         </div>
       </section>
 
       {/* KENAPA */}
-      <section className="py-5 bg-light">
-        <div className="container">
-          <h2 className="text-center mb-5 section-title fw-bold">
-            Kenapa Harus Melapor?
-          </h2>
+      <section className="bg-gray-50 px-4 py-16 md:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 md:text-4xl">
+              Kenapa Harus Melapor?
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-500 md:text-base">
+              Setiap laporan membantu menciptakan lingkungan jalan yang lebih
+              aman, tertib, dan nyaman.
+            </p>
+          </div>
 
-          <div className="row g-4">
-
-            <div className="col-md-4">
-              <div className="card h-100 text-center icon-box border-0 shadow-sm p-4">
-                <img src="/image/MOBIL 1.png" className="mx-auto mb-3" alt="" />
-                <h5 className="fw-semibold">Mewujudkan Kota Tertib</h5>
-              </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_10px_30px_rgba(220,38,38,0.35)]">
+              <img
+                src="/image/MOBIL 1.png"
+                alt="Mewujudkan Kota Tertib"
+                className="mx-auto mb-5 h-28 w-auto object-contain"
+              />
+              <h5 className="text-lg font-bold text-gray-900">
+                Mewujudkan Kota Tertib
+              </h5>
             </div>
 
-            <div className="col-md-4">
-              <div className="card h-100 text-center icon-box border-0 shadow-sm p-4">
-                <img src="/image/ORANG JALAN 1.png" className="mx-auto mb-3" alt="" />
-                <h5 className="fw-semibold">Menjaga Kenyamanan</h5>
-              </div>
+            <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_10px_30px_rgba(220,38,38,0.35)]">
+              <img
+                src="/image/ORANG JALAN 1.png"
+                alt="Menjaga Kenyamanan"
+                className="mx-auto mb-5 h-28 w-auto object-contain"
+              />
+              <h5 className="text-lg font-bold text-gray-900">
+                Menjaga Kenyamanan
+              </h5>
             </div>
 
-            <div className="col-md-4">
-              <div className="card h-100 text-center icon-box border-0 shadow-sm p-4">
-                <img src="/image/MONEY 1.png" className="mx-auto mb-3" alt="" />
-                <h5 className="fw-semibold">Mencegah Pungli</h5>
-              </div>
+            <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
+              <img
+                src="/image/MONEY 1.png"
+                alt="Mencegah Pungli"
+                className="mx-auto mb-5 h-28 w-auto object-contain"
+              />
+              <h5 className="text-lg font-bold text-gray-900">
+                Mencegah Pungli
+              </h5>
             </div>
-
           </div>
         </div>
       </section>
-
     </main>
   );
 }
