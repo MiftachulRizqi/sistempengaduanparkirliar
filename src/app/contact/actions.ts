@@ -45,9 +45,16 @@ export async function createLaporanAction(
 ): Promise<LaporanActionState> {
   try {
     const nama = String(formData.get("nama") || "").trim();
+
     const lokasi = String(formData.get("lokasi") || "").trim();
+
     const deskripsi = String(formData.get("deskripsi") || "").trim();
+
     const foto = formData.get("foto");
+
+    const latitude = Number(formData.get("latitude"));
+
+    const longitude = Number(formData.get("longitude"));
 
     const fieldErrors: LaporanFieldErrors = {};
 
@@ -71,8 +78,16 @@ export async function createLaporanAction(
       fieldErrors.foto = "Ukuran foto maksimal 5 MB";
     }
 
-    if (foto instanceof File && foto.size > 0 && !foto.type.startsWith("image/")) {
+    if (
+      foto instanceof File &&
+      foto.size > 0 &&
+      !foto.type.startsWith("image/")
+    ) {
       fieldErrors.foto = "File harus berupa gambar";
+    }
+
+    if (!latitude || !longitude) {
+      fieldErrors.lokasi = "Titik lokasi belum dipilih";
     }
 
     if (Object.keys(fieldErrors).length > 0) {
@@ -87,10 +102,13 @@ export async function createLaporanAction(
     const validFoto = foto as File;
 
     const bytes = await validFoto.arrayBuffer();
+
     const buffer = Buffer.from(bytes);
 
     const safeName = sanitizeFileName(validFoto.name);
+
     const fileName = `${Date.now()}-${randomUUID()}-${safeName}`;
+
     const filePath = `laporan/${fileName}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
@@ -121,13 +139,17 @@ export async function createLaporanAction(
         lokasi,
         deskripsi,
         foto: fotoUrl,
+        latitude,
+        longitude,
         status: "Menunggu",
       })
       .select("id")
       .single();
 
     if (error) {
-      await supabaseAdmin.storage.from("uploads").remove([filePath]);
+      await supabaseAdmin.storage
+        .from("uploads")
+        .remove([filePath]);
 
       return createActionResult(
         "error",
@@ -137,6 +159,10 @@ export async function createLaporanAction(
     }
 
     revalidatePath("/services");
+
+    revalidatePath("/admin");
+
+    revalidatePath("/admin/peta-laporan");
 
     if (data?.id) {
       revalidatePath(`/laporan/${data.id}`);
@@ -148,7 +174,10 @@ export async function createLaporanAction(
       "Terima kasih. Laporan Anda sudah kami terima dan akan segera ditindaklanjuti."
     );
   } catch (error) {
-    console.error("Server Action createLaporanAction error:", error);
+    console.error(
+      "Server Action createLaporanAction error:",
+      error
+    );
 
     return createActionResult(
       "error",

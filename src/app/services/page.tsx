@@ -6,12 +6,16 @@ import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 
 type Laporan = {
-  id: string;
+  id: number;
+  nama: string;
   lokasi: string;
   deskripsi: string;
-  foto: string | null;
+  foto: string;
+
   status: "Menunggu" | "Diproses" | "Selesai";
-  created_at: string;
+
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export default async function Services() {

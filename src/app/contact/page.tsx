@@ -54,6 +54,9 @@ export default function Contact() {
     112.7521,
   ]);
 
+  const selectedLat = Array.isArray(position) ? position[0] : position.lat;
+  const selectedLng = Array.isArray(position) ? position[1] : position.lng;
+
   const [errors, setErrors] = useState<LaporanFieldErrors>({});
   const [loadingMap, setLoadingMap] = useState(false);
   const [alertState, setAlertState] =
@@ -601,6 +604,17 @@ const inputClass = (hasError?: boolean) =>
                     )}
                   </div>
 
+                  <input
+                    type="hidden"
+                    name="latitude"
+                    value={selectedLat}
+                  />
+
+                  <input
+                    type="hidden"
+                    name="longitude"
+                    value={selectedLng}
+                  />
                   <SubmitButton disabled={loadingMap} />
                 </form>
               </div>
