@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "../components/AdminSidebar";
 import StatCard from "../components/StatCard";
 
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

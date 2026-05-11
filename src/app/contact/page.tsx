@@ -7,12 +7,17 @@ import Link from "next/link";
 import FloatingAlert from "@/components/FloatingAlert";
 import SubmitButton from "./SubmitButton";
 import { createLaporanAction } from "./actions";
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaShieldAlt, } from "react-icons/fa";
+import {
+  FaPhoneAlt,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaShieldAlt,
+} from "react-icons/fa";
+import AuthFormGuard from "../../components/AuthFormGuard";
 import {
   initialLaporanActionState,
   type LaporanFieldErrors,
 } from "./actionTypes";
-
 
 const MapPicker = dynamic(() => import("@/components/MapPicker"), {
   ssr: false,
@@ -67,19 +72,22 @@ export default function Contact() {
     initialLaporanActionState
   );
 
-const inputClass = (hasError?: boolean) =>
-  `
-    w-full rounded-2xl border bg-white px-4 py-3
-    text-[15px] text-[#17332e]
-    shadow-sm outline-none transition-all duration-200
-    placeholder:text-[#8b9b97]
-    focus:border-red-600 focus:ring-4 focus:ring-red-600/10
-    disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-70
-    ${hasError ? "border-red-500 focus:border-red-500 focus:ring-red-500/10" : "border-gray-300"}
-  `;
+  const inputClass = (hasError?: boolean) =>
+    `
+      w-full rounded-2xl border bg-white px-4 py-3
+      text-[15px] text-[#17332e]
+      shadow-sm outline-none transition-all duration-200
+      placeholder:text-[#8b9b97]
+      focus:border-red-600 focus:ring-4 focus:ring-red-600/10
+      disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-70
+      ${
+        hasError
+          ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+          : "border-gray-300"
+      }
+    `;
 
-  const labelClass =
-  "mb-2 block text-[15px] font-bold text-[#17332e]";
+  const labelClass = "mb-2 block text-[15px] font-bold text-[#17332e]";
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const closeAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -124,7 +132,9 @@ const inputClass = (hasError?: boolean) =>
   }, [clearCloseAlertTimer]);
 
   useEffect(() => {
-    if (isPending) {
+    if (!isPending) return;
+
+    const pendingAlertTimer = setTimeout(() => {
       clearCloseAlertTimer();
 
       showAlert({
@@ -133,7 +143,11 @@ const inputClass = (hasError?: boolean) =>
         message:
           "Mohon menunggu, laporan Anda segera dikirim. Jangan tutup halaman ini.",
       });
-    }
+    }, 0);
+
+    return () => {
+      clearTimeout(pendingAlertTimer);
+    };
   }, [isPending, clearCloseAlertTimer, showAlert]);
 
   useEffect(() => {
@@ -143,34 +157,41 @@ const inputClass = (hasError?: boolean) =>
 
     lastHandledSubmission.current = actionState.submittedAt;
 
-    if (actionState.status === "success") {
-      showAlert({
-        type: "success",
-        title: actionState.title,
-        message: actionState.message,
-      });
+    const actionResultTimer = setTimeout(() => {
+      if (actionState.status === "success") {
+        showAlert({
+          type: "success",
+          title: actionState.title,
+          message: actionState.message,
+        });
 
-      setForm(INITIAL_FORM_STATE);
-      setErrors({});
+        setForm(INITIAL_FORM_STATE);
+        setErrors({});
+        setPosition([-7.2575, 112.7521]);
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        closeAlertAfter(2600);
+        return;
       }
 
-      closeAlertAfter(2600);
-      return;
-    }
+      if (actionState.status === "error") {
+        showAlert({
+          type: "error",
+          title: actionState.title,
+          message: actionState.message,
+        });
 
-    if (actionState.status === "error") {
-      showAlert({
-        type: "error",
-        title: actionState.title,
-        message: actionState.message,
-      });
+        setErrors(actionState.fieldErrors || {});
+        closeAlertAfter(3200);
+      }
+    }, 0);
 
-      setErrors(actionState.fieldErrors || {});
-      closeAlertAfter(3200);
-    }
+    return () => {
+      clearTimeout(actionResultTimer);
+    };
   }, [actionState, showAlert, closeAlertAfter]);
 
   const handleChange = (
@@ -201,7 +222,12 @@ const inputClass = (hasError?: boolean) =>
   const validateClient = () => {
     const newErrors: LaporanFieldErrors = {};
 
-    if (!form.nama.trim()) newErrors.nama = "Nama wajib diisi";
+    if (!form.nama.trim()) {
+      newErrors.nama = "Nama wajib diisi";
+    } else if (/\d/.test(form.nama)) {
+      newErrors.nama = "Nama tidak boleh mengandung angka";
+    }
+
     if (!form.lokasi.trim()) newErrors.lokasi = "Lokasi wajib diisi";
     if (!form.deskripsi.trim()) newErrors.deskripsi = "Deskripsi wajib diisi";
     if (!form.foto) newErrors.foto = "Foto wajib diupload";
@@ -229,8 +255,8 @@ const inputClass = (hasError?: boolean) =>
 
       showAlert({
         type: "error",
-        title: "Data belum lengkap",
-        message: "Lengkapi semua data laporan sebelum mengirim.",
+        title: "Data belum valid",
+        message: "Periksa kembali input laporan yang masih salah.",
       });
 
       closeAlertAfter(2800);
@@ -271,6 +297,7 @@ const inputClass = (hasError?: boolean) =>
       if (data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
+
         setPosition([lat, lon]);
       } else {
         showAlert({
@@ -369,8 +396,8 @@ const inputClass = (hasError?: boolean) =>
                   </h4>
 
                   <p className="mb-5 text-sm leading-relaxed text-gray-500">
-                    Jika mengalami kendala, hubungi kami melalui kontak berikut atau kirim
-                    laporan melalui form.
+                    Jika mengalami kendala, hubungi kami melalui kontak berikut
+                    atau kirim laporan melalui form.
                   </p>
 
                   <div className="mb-5 space-y-4">
@@ -380,8 +407,12 @@ const inputClass = (hasError?: boolean) =>
                       </div>
 
                       <div>
-                        <h6 className="mb-1 text-sm font-bold text-gray-900">Telepon</h6>
-                        <p className="mb-0 text-sm text-gray-500">0896-7754-3220</p>
+                        <h6 className="mb-1 text-sm font-bold text-gray-900">
+                          Telepon
+                        </h6>
+                        <p className="mb-0 text-sm text-gray-500">
+                          0896-7754-3220
+                        </p>
                       </div>
                     </div>
 
@@ -391,7 +422,9 @@ const inputClass = (hasError?: boolean) =>
                       </div>
 
                       <div>
-                        <h6 className="mb-1 text-sm font-bold text-gray-900">Email</h6>
+                        <h6 className="mb-1 text-sm font-bold text-gray-900">
+                          Email
+                        </h6>
                         <p className="mb-0 break-all text-sm text-gray-500">
                           info@pengaduanparkirliar.id
                         </p>
@@ -404,7 +437,9 @@ const inputClass = (hasError?: boolean) =>
                       </div>
 
                       <div>
-                        <h6 className="mb-1 text-sm font-bold text-gray-900">Lokasi</h6>
+                        <h6 className="mb-1 text-sm font-bold text-gray-900">
+                          Lokasi
+                        </h6>
                         <p className="mb-0 text-sm text-gray-500">Surabaya</p>
                       </div>
                     </div>
@@ -433,8 +468,8 @@ const inputClass = (hasError?: boolean) =>
                       </h5>
 
                       <p className="mb-4 text-sm leading-relaxed text-gray-500">
-                        Setiap laporan akan diproses secara transparan dan diteruskan kepada
-                        pihak terkait.
+                        Setiap laporan akan diproses secara transparan dan
+                        diteruskan kepada pihak terkait.
                       </p>
 
                       <div className="grid grid-cols-2 gap-3">
@@ -459,20 +494,19 @@ const inputClass = (hasError?: boolean) =>
                     </div>
                   </div>
 
-                <Link
-                  href="/team"
-                  className={`mt-auto inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white !no-underline hover:!no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition hover:bg-red-700 hover:text-white hover:shadow-[0_18px_36px_rgba(220,38,38,0.34)] ${
-                    isPending ? "pointer-events-none opacity-60" : ""
-                  }`}
-                  aria-disabled={isPending}
-                  tabIndex={isPending ? -1 : 0}
-                  onClick={(e) => {
-                    if (isPending) e.preventDefault();
-                  }}
-                
-                >
-                  Lihat Tim Kami
-                </Link>
+                  <Link
+                    href="/team"
+                    className={`mt-auto inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white !no-underline hover:!no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition hover:bg-red-700 hover:text-white hover:shadow-[0_18px_36px_rgba(220,38,38,0.34)] ${
+                      isPending ? "pointer-events-none opacity-60" : ""
+                    }`}
+                    aria-disabled={isPending}
+                    tabIndex={isPending ? -1 : 0}
+                    onClick={(e) => {
+                      if (isPending) e.preventDefault();
+                    }}
+                  >
+                    Lihat Tim Kami
+                  </Link>
                 </div>
               </div>
             </div>
@@ -488,135 +522,144 @@ const inputClass = (hasError?: boolean) =>
                   </p>
                 </div>
 
-                <form
-                  action={formAction}
-                  onSubmit={handleSubmit}
-                  noValidate
-                  style={{
-                    pointerEvents: isPending ? "none" : "auto",
-                    opacity: isPending ? 0.72 : 1,
-                    transition: "opacity 0.2s ease",
-                  }}
-                >
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className={labelClass}>Nama Pelapor</label>
-                      <input
-                        type="text"
-                        name="nama"
-                        value={form.nama}
-                        onChange={handleChange}
-                        disabled={isPending}
-                        className={inputClass(!!errors.nama)}
-                        placeholder="Masukkan nama"
-                      />
-                      {errors.nama && <div className="mt-2 text-sm font-medium text-red-600">{errors.nama}</div>}
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Lokasi Kejadian</label>
-                      <input
-                        type="text"
-                        name="lokasi"
-                        value={form.lokasi}
-                        onChange={handleChange}
-                        disabled={isPending}
-                        className={inputClass(!!errors.lokasi)}
-                        placeholder="Masukkan lokasi"
-                      />
-                      {errors.lokasi && <div className="mt-2 text-sm font-medium text-red-600">{errors.lokasi}</div>}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleSearchLocation}
-                    disabled={loadingMap || isPending}
-                    className="
-                      mt-4 mb-4 inline-flex w-full items-center justify-center gap-2
-                      !rounded-xl border border-red-600 bg-white
-                      px-5 py-3 text-sm font-bold text-red-600
-                      shadow-sm transition-all duration-200
-
-                      hover:-translate-y-0.5 
-                      hover:!bg-red-600 hover:!text-white 
-                      hover:shadow-[0_16px_30px_rgba(220,38,38,0.35)]
-
-                      active:scale-[0.98]
-
-                      disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0
-                    "
+                <AuthFormGuard next="/contact">
+                  <form
+                    action={formAction}
+                    onSubmit={handleSubmit}
+                    noValidate
+                    style={{
+                      pointerEvents: isPending ? "none" : "auto",
+                      opacity: isPending ? 0.72 : 1,
+                      transition: "opacity 0.2s ease",
+                    }}
                   >
-                    {loadingMap && (
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600" />
-                    )}
-
-                    <span>{loadingMap ? "Mencari Lokasi..." : "Cari Lokasi di Map"}</span>
-                  </button>
-
-                  <div className="mt-2 mb-4 rounded-2xl overflow-hidden">
-                    <MapPicker position={position} onSelect={handleSelectMap} />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className={labelClass}>Deskripsi Laporan</label>
-                    <textarea
-                      name="deskripsi"
-                      value={form.deskripsi}
-                      onChange={handleChange}
-                      disabled={isPending}
-                      className={`${inputClass(!!errors.deskripsi)} min-h-[150px] resize-y`}
-                      rows={4}
-                      placeholder="Tuliskan detail laporan"
-                    />
-                    {errors.deskripsi && (
-                      <div className="mt-2 text-sm font-medium text-red-600">
-                        {errors.deskripsi}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className={labelClass}>Nama Pelapor</label>
+                        <input
+                          type="text"
+                          name="nama"
+                          value={form.nama}
+                          onChange={handleChange}
+                          disabled={isPending}
+                          className={inputClass(!!errors.nama)}
+                          placeholder="Masukkan nama"
+                        />
+                        {errors.nama && (
+                          <div className="mt-2 text-sm font-medium text-red-600">
+                            {errors.nama}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="mb-4">
-                    <label className={labelClass}>Upload Foto Bukti</label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      name="foto"
-                      onChange={handleChange}
-                      disabled={isPending}
-                      className={`
-                        w-full cursor-pointer rounded-2xl border bg-white
-                        text-[15px] text-[#17332e]
+                      <div>
+                        <label className={labelClass}>Lokasi Kejadian</label>
+                        <input
+                          type="text"
+                          name="lokasi"
+                          value={form.lokasi}
+                          onChange={handleChange}
+                          disabled={isPending}
+                          className={inputClass(!!errors.lokasi)}
+                          placeholder="Masukkan lokasi"
+                        />
+                        {errors.lokasi && (
+                          <div className="mt-2 text-sm font-medium text-red-600">
+                            {errors.lokasi}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleSearchLocation}
+                      disabled={loadingMap || isPending}
+                      className="
+                        mt-4 mb-4 inline-flex w-full items-center justify-center gap-2
+                        !rounded-xl border border-red-600 bg-white
+                        px-5 py-3 text-sm font-bold text-red-600
                         shadow-sm transition-all duration-200
-                        file:mr-5 file:border-0 file:bg-gray-100 file:px-5 file:py-3.5
-                        file:text-sm file:font-semibold file:text-[#17332e]
-                        hover:file:bg-gray-200
-                        focus:border-[#1b8f6b] focus:outline-none focus:ring-4 focus:ring-[#1b8f6b]/10
-                        disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-70
-                        ${errors.foto ? "border-red-500 focus:border-red-500 focus:ring-red-500/10" : "border-gray-300"}
-                      `}
-                      accept="image/*"
-                    />
-                    {errors.foto && (
-                      <div className="mt-2 text-sm font-medium text-red-600">
-                        {errors.foto}
-                      </div>
-                    )}
-                  </div>
+                        hover:-translate-y-0.5
+                        hover:!bg-red-600 hover:!text-white
+                        hover:shadow-[0_16px_30px_rgba(220,38,38,0.35)]
+                        active:scale-[0.98]
+                        disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0
+                      "
+                    >
+                      {loadingMap && (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600" />
+                      )}
 
-                  <input
-                    type="hidden"
-                    name="latitude"
-                    value={selectedLat}
-                  />
+                      <span>
+                        {loadingMap
+                          ? "Mencari Lokasi..."
+                          : "Cari Lokasi di Map"}
+                      </span>
+                    </button>
 
-                  <input
-                    type="hidden"
-                    name="longitude"
-                    value={selectedLng}
-                  />
-                  <SubmitButton disabled={loadingMap} />
-                </form>
+                    <div className="mt-2 mb-4 overflow-hidden rounded-2xl">
+                      <MapPicker position={position} onSelect={handleSelectMap} />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className={labelClass}>Deskripsi Laporan</label>
+                      <textarea
+                        name="deskripsi"
+                        value={form.deskripsi}
+                        onChange={handleChange}
+                        disabled={isPending}
+                        className={`${inputClass(
+                          !!errors.deskripsi
+                        )} min-h-[150px] resize-y`}
+                        rows={4}
+                        placeholder="Tuliskan detail laporan"
+                      />
+                      {errors.deskripsi && (
+                        <div className="mt-2 text-sm font-medium text-red-600">
+                          {errors.deskripsi}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-4">
+                      <label className={labelClass}>Upload Foto Bukti</label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        name="foto"
+                        onChange={handleChange}
+                        disabled={isPending}
+                        className={`
+                          w-full cursor-pointer rounded-2xl border bg-white
+                          text-[15px] text-[#17332e]
+                          shadow-sm transition-all duration-200
+                          file:mr-5 file:border-0 file:bg-gray-100 file:px-5 file:py-3.5
+                          file:text-sm file:font-semibold file:text-[#17332e]
+                          hover:file:bg-gray-200
+                          focus:border-[#1b8f6b] focus:outline-none focus:ring-4 focus:ring-[#1b8f6b]/10
+                          disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-70
+                          ${
+                            errors.foto
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+                              : "border-gray-300"
+                          }
+                        `}
+                        accept="image/*"
+                      />
+                      {errors.foto && (
+                        <div className="mt-2 text-sm font-medium text-red-600">
+                          {errors.foto}
+                        </div>
+                      )}
+                    </div>
+
+                    <input type="hidden" name="latitude" value={selectedLat} />
+                    <input type="hidden" name="longitude" value={selectedLng} />
+
+                    <SubmitButton disabled={loadingMap} />
+                  </form>
+                </AuthFormGuard>
               </div>
             </div>
           </div>

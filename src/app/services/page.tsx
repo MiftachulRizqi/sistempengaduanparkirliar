@@ -1,47 +1,72 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-import MapLaporanClient from "@/components/MapLaporanClient";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 
-type Laporan = {
-  id: number;
-  nama: string;
+type LaporanSaya = {
+  id: number | string;
+  nama?: string | null;
+  email?: string | null;
   lokasi: string;
   deskripsi: string;
-  foto: string;
-
+  foto: string | null;
   status: "Menunggu" | "Diproses" | "Selesai";
-
-  latitude?: number | null;
-  longitude?: number | null;
+  created_at: string;
 };
 
-export default async function Services() {
-  const { data: laporan, error } = await supabaseAdmin
-    .from("laporan")
-    .select("*")
-    .order("created_at", { ascending: false });
+function getStatusStyle(status: LaporanSaya["status"]) {
+  if (status === "Selesai") return "bg-green-100 text-green-600";
+  if (status === "Diproses") return "bg-blue-100 text-blue-600";
+  return "bg-yellow-100 text-yellow-600";
+}
 
-  if (error) {
-    console.error("Supabase Error:", error);
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export default async function Services() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth-token")?.value;
+  const role = cookieStore.get("auth-role")?.value;
+  const email = cookieStore.get("auth-email")?.value || "";
+
+  const isUserLoggedIn = token === "logged-in" && role === "user" && !!email;
+
+  let riwayatLaporan: LaporanSaya[] = [];
+
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error("Supabase profile error:", profileError.message);
   }
 
-  const dataLaporan: Laporan[] = laporan || [];
+  if (profile?.id) {
+    const { data, error } = await supabaseAdmin
+      .from("laporan")
+      .select("*")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false });
 
-  const totalLaporan = dataLaporan.length;
-  const totalMenunggu = dataLaporan.filter(
-    (item) => item.status === "Menunggu"
-  ).length;
-  const totalDiproses = dataLaporan.filter(
-    (item) => item.status === "Diproses"
-  ).length;
-  const totalSelesai = dataLaporan.filter(
-    (item) => item.status === "Selesai"
-  ).length;
+    if (error) {
+      console.error("Supabase riwayat laporan saya error:", error.message);
+    }
 
-  const isSlider = dataLaporan.length > 6;
+    riwayatLaporan = (data || []) as LaporanSaya[];
+
+
+    if (error) {
+      console.error("Supabase riwayat laporan saya error:", error.message);
+    }
+
+    riwayatLaporan = (data || []) as LaporanSaya[];
+  }
 
   return (
     <section className="bg-gray-50 px-4 py-16 md:px-6 lg:px-8">
@@ -54,7 +79,6 @@ export default async function Services() {
           Fitur lengkap untuk memudahkan pelaporan parkir liar
         </p>
 
-        {/* FITUR */}
         <div className="mb-14 grid gap-6 md:grid-cols-3">
           <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
             <img
@@ -62,9 +86,11 @@ export default async function Services() {
               className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Maps"
             />
+
             <h5 className="mb-2 text-lg font-bold text-gray-900">
               Lokasi Akurat
             </h5>
+
             <p className="mb-0 text-sm leading-relaxed text-gray-500">
               Tentukan lokasi pelanggaran dengan pin map yang akurat.
             </p>
@@ -76,9 +102,11 @@ export default async function Services() {
               className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Kamera"
             />
+
             <h5 className="mb-2 text-lg font-bold text-gray-900">
               Upload Foto
             </h5>
+
             <p className="mb-0 text-sm leading-relaxed text-gray-500">
               Lampirkan bukti foto kejadian di lokasi.
             </p>
@@ -90,16 +118,17 @@ export default async function Services() {
               className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Status"
             />
+
             <h5 className="mb-2 text-lg font-bold text-gray-900">
               Pantau Status
             </h5>
+
             <p className="mb-0 text-sm leading-relaxed text-gray-500">
               Lihat perkembangan status laporan secara real-time.
             </p>
           </div>
         </div>
 
-        {/* CARA KERJA */}
         <h2 className="mb-8 text-3xl font-extrabold text-gray-900 md:text-4xl">
           Cara Kerja
         </h2>
@@ -150,182 +179,116 @@ export default async function Services() {
           ))}
         </div>
 
-        {/* MAP */}
-        <div className="mb-14 rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)]">
-          <h5 className="mb-4 text-lg font-bold text-gray-900">
-            Peta Laporan Parkir
-          </h5>
+        <div
+          id="riwayat-laporan"
+          className="scroll-mt-24 rounded-[28px] bg-white p-6 text-left shadow-[0_18px_45px_rgba(0,0,0,0.06)] md:p-8"
+        >
+          <div className="mb-6 text-center">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-red-600">
+              Riwayat Laporan Saya
+            </span>
 
-          {dataLaporan.length === 0 ? (
-            <p className="mb-0 text-sm text-gray-500">Belum ada laporan</p>
-          ) : (
-            <MapLaporanClient data={dataLaporan} />
-          )}
-        </div>
+            <h3 className="mb-3 text-2xl font-extrabold text-gray-900 md:text-3xl">
+              Pantau Laporan yang Pernah Kamu Kirim
+            </h3>
 
-        {/* DATA LAPORAN PREMIUM */}
-        <div className="rounded-[28px] bg-white p-5 text-left shadow-[0_20px_60px_rgba(0,0,0,0.07)] md:p-7">
-          <div className="mb-6 grid gap-5 rounded-[24px] bg-gradient-to-br from-red-50 via-white to-red-100 p-5 md:grid-cols-[1fr_auto] md:items-center md:p-7">
-            <div className="flex gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] border border-red-100 bg-red-50 text-3xl text-red-600 shadow-[0_14px_35px_rgba(220,38,38,0.16)]">
-                <i className="fa-regular fa-clipboard"></i>
-              </div>
-
-              <div>
-                <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-1.5 text-xs font-bold text-red-600">
-                  <span className="h-2 w-2 rounded-full bg-red-600"></span>
-                  LIVE DATA
-                </span>
-
-                <h5 className="mb-3 text-3xl font-extrabold text-gray-900 md:text-4xl">
-                  Data <strong className="text-red-600">Laporan Parkir</strong>
-                </h5>
-
-                <p className="mb-5 max-w-2xl text-sm leading-relaxed text-gray-500 md:text-base">
-                  Pantau laporan parkir liar yang telah dikirim oleh masyarakat
-                  secara real-time dan transparan.
-                </p>
-
-                <div className="h-1 w-20 rounded-full bg-red-600"></div>
-              </div>
-            </div>
-
-            <div className="rounded-[24px] bg-white/80 p-5 shadow-[0_24px_60px_rgba(220,38,38,0.18)] backdrop-blur">
-              <div className="flex items-center gap-5">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl text-red-600 shadow-[0_14px_35px_rgba(220,38,38,0.16)]">
-                  <i className="fa-solid fa-chart-pie"></i>
-                </div>
-
-                <div>
-                  <span className="text-sm font-bold text-gray-500">
-                    Total Laporan
-                  </span>
-                  <strong className="block text-5xl font-extrabold text-red-600">
-                    {totalLaporan}
-                  </strong>
-                  <p className="mb-0 text-sm text-gray-500">
-                    <i className="fa-solid fa-arrow-trend-up mr-1 text-green-500"></i>
-                    Update terbaru
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-gray-500 md:text-base">
+              Riwayat ini hanya menampilkan laporan yang dikirim menggunakan
+              akun yang sedang login.
+            </p>
           </div>
 
-          {/* MINI DASHBOARD */}
-          <div className="mb-6 grid overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-[0_18px_45px_rgba(0,0,0,0.06)] sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 sm:border-r lg:border-b-0">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-red-50 text-2xl text-red-600">
-                <i className="fa-regular fa-clipboard"></i>
+          {!isUserLoggedIn ? (
+            <div className="rounded-3xl border border-dashed border-red-200 bg-red-50/60 p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl text-red-600 shadow-sm">
+                <i className="fa-solid fa-lock"></i>
               </div>
-              <div>
-                <strong className="block text-3xl font-extrabold text-red-600">
-                  {totalLaporan}
-                </strong>
-                <span className="text-sm font-semibold text-gray-500">
-                  Total Laporan
-                </span>
-              </div>
-            </div>
 
-            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 lg:border-b-0 lg:border-r">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-yellow-50 text-2xl text-yellow-500">
-                <i className="fa-regular fa-clock"></i>
-              </div>
-              <div>
-                <strong className="block text-3xl font-extrabold text-yellow-500">
-                  {totalMenunggu}
-                </strong>
-                <span className="text-sm font-semibold text-gray-500">
-                  Menunggu
-                </span>
-              </div>
-            </div>
+              <h4 className="mb-2 text-xl font-extrabold text-gray-900">
+                Login untuk Melihat Riwayat
+              </h4>
 
-            <div className="flex items-center justify-center gap-4 border-b border-gray-100 p-5 sm:border-r sm:border-b-0">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-blue-50 text-2xl text-blue-500">
-                <i className="fa-solid fa-hourglass-half"></i>
-              </div>
-              <div>
-                <strong className="block text-3xl font-extrabold text-blue-500">
-                  {totalDiproses}
-                </strong>
-                <span className="text-sm font-semibold text-gray-500">
-                  Diproses
-                </span>
-              </div>
-            </div>
+              <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-gray-500">
+                Masuk menggunakan akun user agar riwayat laporan kamu dapat
+                ditampilkan di halaman ini.
+              </p>
 
-            <div className="flex items-center justify-center gap-4 p-5">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-green-50 text-2xl text-green-500">
-                <i className="fa-regular fa-circle-check"></i>
-              </div>
-              <div>
-                <strong className="block text-3xl font-extrabold text-green-500">
-                  {totalSelesai}
-                </strong>
-                <span className="text-sm font-semibold text-gray-500">
-                  Selesai
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD LAPORAN */}
-          <div
-            className={
-              isSlider
-                ? "flex gap-6 overflow-x-auto pb-4"
-                : "grid gap-6 md:grid-cols-3"
-            }
-          >
-            {dataLaporan.map((item) => (
-              <div
-                className={`flex h-full flex-col overflow-hidden rounded-[24px] bg-white shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.28)] ${
-                  isSlider ? "min-w-[310px] md:min-w-[360px]" : ""
-                }`}
-                key={item.id}
+              <Link
+                href="/login?next=/services#riwayat-laporan"
+                className="inline-flex items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
               >
-                <img
-                  src={item.foto || "/image/default.png"}
-                  alt={item.lokasi}
-                  className="h-48 w-full object-cover"
-                />
+                Login Sekarang
+              </Link>
+            </div>
+          ) : riwayatLaporan.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl text-red-600 shadow-sm">
+                <i className="fa-regular fa-folder-open"></i>
+              </div>
 
-                <div className="flex flex-1 flex-col p-5">
-                  <h6 className="mb-2 flex min-h-[48px] items-start gap-2 text-base font-bold leading-snug text-gray-900">
-                    <i className="fa-solid fa-location-dot mt-1 shrink-0 text-red-600"></i>
-                    <span className="line-clamp-2">{item.lokasi}</span>
-                  </h6>
+              <h4 className="mb-2 text-xl font-extrabold text-gray-900">
+                Belum Ada Riwayat Laporan
+              </h4>
 
-                  <p className="mb-4 min-h-[72px] line-clamp-3 text-sm leading-relaxed text-gray-500">
-                    {item.deskripsi}
-                  </p>
+              <p className="mx-auto mb-6 max-w-xl text-sm leading-relaxed text-gray-500">
+                Kamu belum mengirim laporan menggunakan akun ini.
+              </p>
 
-                  <div className="mt-auto">
-                    <span className="mb-4 inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
-                      {item.status}
-                    </span>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
+              >
+                Buat Laporan
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {riwayatLaporan.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex h-full flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.28)]"
+                >
+                  <img
+                    src={item.foto || "/image/default.png"}
+                    alt={item.lokasi}
+                    className="h-44 w-full object-cover"
+                  />
+
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getStatusStyle(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+
+                      <span className="text-xs font-semibold text-gray-400">
+                        {formatDate(item.created_at)}
+                      </span>
+                    </div>
+
+                    <h4 className="mb-2 line-clamp-2 text-base font-extrabold text-gray-900">
+                      {item.lokasi}
+                    </h4>
+
+                    <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-gray-500">
+                      {item.deskripsi}
+                    </p>
 
                     <Link
                       href={`/laporan/${item.id}`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white !no-underline transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
+                      className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white !no-underline transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
                     >
-                      Lihat Detail <i className="fa-solid fa-arrow-right"></i>
+                      Lihat Detail
+                      <i className="fa-solid fa-arrow-right"></i>
                     </Link>
                   </div>
                 </div>
-              </div>
-            ))}
-
-            {dataLaporan.length === 0 && (
-              <div className="md:col-span-3">
-                <p className="mb-0 text-center text-sm text-gray-500">
-                  Belum ada data laporan.
-                </p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

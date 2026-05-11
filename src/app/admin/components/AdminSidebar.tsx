@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { logoutAction } from "@/app/login/actions";
 
 const reportMenus = [
   {
@@ -52,7 +53,6 @@ const managementMenus = [
 export default function AdminSidebar() {
   return (
     <aside className="hidden min-h-screen w-72 border-r border-slate-200 bg-white px-6 py-6 lg:block">
-      {/* BRAND */}
       <div className="mb-8 flex items-center gap-3">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-200">
           <i className="fa-solid fa-shield-halved text-xl"></i>
@@ -68,9 +68,7 @@ export default function AdminSidebar() {
         </div>
       </div>
 
-      {/* MENU */}
       <nav className="space-y-7">
-        {/* MAIN */}
         <div>
           <p className="mb-3 px-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
             Utama
@@ -85,7 +83,6 @@ export default function AdminSidebar() {
           </Link>
         </div>
 
-        {/* REPORTS */}
         <div>
           <p className="mb-3 px-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
             Kelola Laporan
@@ -105,7 +102,6 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* MONITORING */}
         <div>
           <p className="mb-3 px-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
             Monitoring
@@ -125,7 +121,6 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* MANAGEMENT */}
         <div>
           <p className="mb-3 px-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
             Manajemen Data
@@ -145,7 +140,6 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* SETTINGS */}
         <div>
           <p className="mb-3 px-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
             Sistem
@@ -160,13 +154,15 @@ export default function AdminSidebar() {
               Pengaturan
             </Link>
 
-            <Link
-              href="/"
-              className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 no-underline transition hover:bg-slate-50 hover:text-red-600"
-            >
-              <i className="fa-solid fa-right-from-bracket w-5"></i>
-              Keluar
-            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-red-600"
+              >
+                <i className="fa-solid fa-right-from-bracket w-5"></i>
+                Keluar
+              </button>
+            </form>
           </div>
         </div>
       </nav>

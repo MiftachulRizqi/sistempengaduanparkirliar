@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "../components/AdminSidebar";
 import MapLaporanClient from "@/components/MapLaporanClient";
 
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -10,7 +11,7 @@ type Laporan = {
   nama: string;
   lokasi: string;
   deskripsi: string;
-  foto: string;
+  foto: string | null;
   status: "Menunggu" | "Diproses" | "Selesai";
   created_at: string;
 };
@@ -51,7 +52,8 @@ export default async function AdminPetaLaporanPage() {
                 </h1>
 
                 <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                  Pantau sebaran lokasi laporan parkir liar yang masuk ke sistem.
+                  Pantau sebaran lokasi laporan parkir liar yang masuk ke
+                  sistem.
                 </p>
               </div>
             </div>
@@ -74,9 +76,7 @@ export default async function AdminPetaLaporanPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-50 text-yellow-600">
                 <i className="fa-regular fa-clock"></i>
               </div>
-              <p className="text-sm font-semibold text-slate-500">
-                Menunggu
-              </p>
+              <p className="text-sm font-semibold text-slate-500">Menunggu</p>
               <h2 className="mt-2 text-3xl font-extrabold text-yellow-600">
                 {menunggu}
               </h2>
@@ -86,9 +86,7 @@ export default async function AdminPetaLaporanPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                 <i className="fa-solid fa-spinner"></i>
               </div>
-              <p className="text-sm font-semibold text-slate-500">
-                Diproses
-              </p>
+              <p className="text-sm font-semibold text-slate-500">Diproses</p>
               <h2 className="mt-2 text-3xl font-extrabold text-blue-600">
                 {diproses}
               </h2>
@@ -98,9 +96,7 @@ export default async function AdminPetaLaporanPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50 text-green-600">
                 <i className="fa-solid fa-circle-check"></i>
               </div>
-              <p className="text-sm font-semibold text-slate-500">
-                Selesai
-              </p>
+              <p className="text-sm font-semibold text-slate-500">Selesai</p>
               <h2 className="mt-2 text-3xl font-extrabold text-green-600">
                 {selesai}
               </h2>
@@ -114,7 +110,8 @@ export default async function AdminPetaLaporanPage() {
               </h3>
 
               <p className="mt-1 text-sm text-slate-500">
-                Marker menunjukkan titik laporan berdasarkan lokasi yang dikirim masyarakat.
+                Marker menunjukkan titik laporan berdasarkan lokasi yang dikirim
+                masyarakat.
               </p>
             </div>
 

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "../components/AdminSidebar";
 
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

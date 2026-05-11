@@ -1,6 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "./components/AdminSidebar";
-import AdminTopbar from "./components/AdminTopbar";
 import StatCard from "./components/StatCard";
 import AdminFilterBar from "./components/AdminFilterBar";
 import AdminReportTable from "./components/AdminReportTable";
@@ -13,10 +12,12 @@ type Laporan = {
   nama: string;
   lokasi: string;
   deskripsi: string;
-  foto: string;
+  foto: string | null;
   status: "Menunggu" | "Diproses" | "Selesai";
   created_at: string;
 };
+
+const ITEMS_PER_PAGE = 5;
 
 export default async function AdminDashboard({
   searchParams,
@@ -24,12 +25,14 @@ export default async function AdminDashboard({
   searchParams: Promise<{
     search?: string;
     status?: string;
+    page?: string;
   }>;
 }) {
   const params = await searchParams;
 
   const search = params.search || "";
   const status = params.status || "";
+  const currentPage = Math.max(Number(params.page || "1"), 1);
 
   const { data, error } = await supabaseAdmin
     .from("laporan")
@@ -43,14 +46,23 @@ export default async function AdminDashboard({
   const allData = (data || []) as Laporan[];
 
   const laporan = allData.filter((item) => {
+    const keyword = search.toLowerCase();
+
     const matchSearch =
-      item.nama.toLowerCase().includes(search.toLowerCase()) ||
-      item.lokasi.toLowerCase().includes(search.toLowerCase());
+      !keyword ||
+      (item.nama || "").toLowerCase().includes(keyword) ||
+      (item.lokasi || "").toLowerCase().includes(keyword) ||
+      (item.deskripsi || "").toLowerCase().includes(keyword);
 
     const matchStatus = status ? item.status === status : true;
 
     return matchSearch && matchStatus;
   });
+
+  const totalPages = Math.max(Math.ceil(laporan.length / ITEMS_PER_PAGE), 1);
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedLaporan = laporan.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const total = allData.length;
   const menunggu = allData.filter((item) => item.status === "Menunggu").length;
@@ -67,7 +79,6 @@ export default async function AdminDashboard({
           icon: "fa-regular fa-clock",
           bg: "bg-yellow-50",
           text: "text-yellow-600",
-          accent: "bg-yellow-500",
         }
       : status === "Diproses"
       ? {
@@ -78,7 +89,6 @@ export default async function AdminDashboard({
           icon: "fa-solid fa-spinner",
           bg: "bg-blue-50",
           text: "text-blue-600",
-          accent: "bg-blue-600",
         }
       : status === "Selesai"
       ? {
@@ -89,7 +99,6 @@ export default async function AdminDashboard({
           icon: "fa-solid fa-circle-check",
           bg: "bg-green-50",
           text: "text-green-600",
-          accent: "bg-green-600",
         }
       : {
           label: "Kelola Data Laporan",
@@ -99,7 +108,6 @@ export default async function AdminDashboard({
           icon: "fa-solid fa-clipboard-list",
           bg: "bg-red-50",
           text: "text-red-600",
-          accent: "bg-red-600",
         };
 
   return (
@@ -136,7 +144,9 @@ export default async function AdminDashboard({
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
                     Data Ditampilkan
                   </p>
-                  <h3 className={`mt-1 text-2xl font-extrabold ${statusConfig.text}`}>
+                  <h3
+                    className={`mt-1 text-2xl font-extrabold ${statusConfig.text}`}
+                  >
                     {laporan.length}
                   </h3>
                 </div>
@@ -176,7 +186,14 @@ export default async function AdminDashboard({
 
           <AdminFilterBar search={search} status={status} />
 
-          <AdminReportTable laporan={laporan} />
+          <AdminReportTable
+            laporan={paginatedLaporan}
+            totalItems={laporan.length}
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            search={search}
+            status={status}
+          />
         </section>
       </div>
     </main>

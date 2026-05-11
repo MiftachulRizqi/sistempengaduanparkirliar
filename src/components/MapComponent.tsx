@@ -34,6 +34,7 @@ export default function MapComponent({ data }: { data: Laporan[] }) {
             <br />
             <img
               src={item.foto}
+              alt={`Foto laporan parkir liar di ${item.lokasi}`}
               style={{ width: "100%", borderRadius: "8px", marginTop: "5px" }}
             />
             <br />

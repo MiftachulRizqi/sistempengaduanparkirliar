@@ -1,8 +1,9 @@
 import "@/styles/global.css";
 import "leaflet/dist/leaflet.css";
 
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { Suspense } from "react";
+import AppShell from "../components/AppShell";
+import RouteChangeSkeleton from "@/components/RouteChangeSkeleton";
 
 export default function RootLayout({
   children,
@@ -21,10 +22,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
+
       <body>
-        <Navbar />
-        {children}
-        <Footer />
+        <Suspense fallback={null}>
+          <RouteChangeSkeleton />
+        </Suspense>
+
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

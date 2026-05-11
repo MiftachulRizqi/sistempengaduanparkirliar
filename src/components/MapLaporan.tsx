@@ -1,111 +1,108 @@
 "use client";
 
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-} from "react-leaflet";
-
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { useRouter } from "next/navigation";
+type LaporanMapItem = {
+  id: number | string;
+  nama?: string | null;
+  lokasi?: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+};
 
-import L from "leaflet";
+type MapLaporanProps = {
+  data: LaporanMapItem[];
+};
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+const markerIcon = new L.Icon({
+  iconUrl: "/leaflet/marker-icon.png",
+  iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+  shadowUrl: "/leaflet/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
-type Laporan = {
-  id: number;
-  nama: string;
-  lokasi: string;
-  deskripsi: string;
-  foto: string;
+function isValidCoordinate(lat: number, lng: number) {
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+}
 
-  status: "Menunggu" | "Diproses" | "Selesai";
-
-  latitude?: number | null;
-  longitude?: number | null;
-};
-
-type Props = {
-  data: Laporan[];
-};
-
-export default function MapLaporan({
-  data,
-}: Props) {
+export default function MapLaporan({ data }: MapLaporanProps) {
   const router = useRouter();
 
-  const validData = data.filter(
-    (item) =>
-      item.latitude !== null &&
-      item.longitude !== null &&
-      item.latitude !== undefined &&
-      item.longitude !== undefined
-  );
+  const validMarkers = useMemo(() => {
+    return data
+      .map((item) => {
+        const lat = Number(item.latitude);
+        const lng = Number(item.longitude);
+
+        return {
+          ...item,
+          lat,
+          lng,
+        };
+      })
+      .filter((item) => isValidCoordinate(item.lat, item.lng));
+  }, [data]);
+
+  const center: [number, number] =
+    validMarkers.length > 0
+      ? [validMarkers[0].lat, validMarkers[0].lng]
+      : [-7.2575, 112.7521];
 
   return (
     <MapContainer
-      center={[-7.2575, 112.7521]}
+      center={center}
       zoom={12}
-      style={{
-        height: "500px",
-        width: "100%",
-      }}
+      style={{ height: "400px", width: "100%" }}
+      scrollWheelZoom={false}
     >
       <TileLayer
         attribution="&copy; OpenStreetMap"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {validData.map((item) => (
-        <Marker
-          key={item.id}
-          position={[
-            item.latitude as number,
-            item.longitude as number,
-          ]}
-        >
-          <Popup>
-            <div className="min-w-[220px]">
-              <img
-                src={item.foto}
-                alt={item.lokasi}
-                className="mb-3 h-32 w-full rounded-lg object-cover"
-              />
+      {validMarkers.map((item) => {
+        const namaPelapor = item.nama || "Pelapor";
+        const lokasiLaporan = item.lokasi || "Lokasi belum tersedia";
 
-              <h3 className="text-sm font-bold">
-                {item.nama}
-              </h3>
+        return (
+          <Marker
+            key={item.id}
+            position={[item.lat, item.lng]}
+            icon={markerIcon}
+          >
+            <Popup>
+              <div className="min-w-[180px]">
+                <b>{namaPelapor}</b>
+                <br />
+                <span>{lokasiLaporan}</span>
+                <br />
 
-              <p className="mb-2 text-xs text-gray-500">
-                {item.lokasi}
-              </p>
-
-              <button
-                className="mt-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700"
-                onClick={() =>
-                  router.push(`/laporan/${item.id}`)
-                }
-              >
-                Lihat Detail
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+                <button
+                  className="mt-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white"
+                  type="button"
+                  onClick={() => router.push(`/laporan/${item.id}`)}
+                >
+                  Lihat Detail
+                </button>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }

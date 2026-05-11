@@ -7,7 +7,7 @@ import {
   useMapEvents,
   useMap,
 } from "react-leaflet";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import type { LatLngExpression, LeafletMouseEvent } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -18,8 +18,6 @@ type Props = {
 };
 
 function LocationMarker({ position, onSelect }: Props) {
-  const [pos, setPos] = useState<LatLngExpression>(position);
-
   const markerIcon = useMemo(
     () =>
       new L.Icon({
@@ -34,19 +32,14 @@ function LocationMarker({ position, onSelect }: Props) {
     []
   );
 
-  useEffect(() => {
-    setPos(position);
-  }, [position]);
-
   useMapEvents({
     click(e: LeafletMouseEvent) {
       const { lat, lng } = e.latlng;
-      setPos([lat, lng]);
       onSelect(lat, lng);
     },
   });
 
-  return <Marker position={pos} icon={markerIcon} />;
+  return <Marker position={position} icon={markerIcon} />;
 }
 
 function ChangeView({ position }: { position: LatLngExpression }) {
@@ -72,6 +65,7 @@ export default function MapPicker({ position, onSelect }: Props) {
       />
 
       <LocationMarker position={position} onSelect={onSelect} />
+
       <ChangeView position={position} />
     </MapContainer>
   );

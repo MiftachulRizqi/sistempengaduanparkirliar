@@ -3,13 +3,52 @@
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import { Buffer } from "node:buffer";
+import { z } from "zod";
+import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabaseServer";
-import type {
-  LaporanActionState,
-  LaporanFieldErrors,
-} from "./actionTypes";
+import type { LaporanActionState, LaporanFieldErrors } from "./actionTypes";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const laporanSchema = z.object({
+  nama: z
+    .string()
+    .trim()
+    .min(1, "Nama wajib diisi")
+    .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s'.-]+$/, "Nama tidak boleh mengandung angka"),
+
+  lokasi: z.string().trim().min(1, "Lokasi wajib diisi"),
+
+  deskripsi: z
+    .string()
+    .trim()
+    .min(1, "Deskripsi wajib diisi")
+    .min(10, "Deskripsi minimal 10 karakter"),
+
+  latitude: z.coerce
+    .number({
+      message: "Latitude tidak valid",
+    })
+    .refine((value) => value >= -90 && value <= 90, "Latitude tidak valid"),
+
+  longitude: z.coerce
+    .number({
+      message: "Longitude tidak valid",
+    })
+    .refine((value) => value >= -180 && value <= 180, "Longitude tidak valid"),
+
+  foto: z
+    .instanceof(File, { message: "Foto wajib diupload" })
+    .refine((file) => file.size > 0, "Foto wajib diupload")
+    .refine((file) => file.size <= MAX_FILE_SIZE, "Ukuran foto maksimal 5 MB")
+    .refine((file) => file.type.startsWith("image/"), "File harus berupa gambar"),
+});
+
+type AuthenticatedUser = {
+  email: string;
+  role: string;
+  userId: string | null;
+};
 
 function createActionResult(
   status: LaporanActionState["status"],
@@ -26,6 +65,20 @@ function createActionResult(
   };
 }
 
+function getFieldErrors(error: z.ZodError): LaporanFieldErrors {
+  const errors: LaporanFieldErrors = {};
+
+  for (const issue of error.issues) {
+    const field = issue.path[0] as keyof LaporanFieldErrors | undefined;
+
+    if (field && !errors[field]) {
+      errors[field] = issue.message;
+    }
+  }
+
+  return errors;
+}
+
 function sanitizeFileName(fileName: string) {
   const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
   const extension = fileName.split(".").pop()?.toLowerCase() || "jpg";
@@ -39,82 +92,121 @@ function sanitizeFileName(fileName: string) {
   return `${safeName}.${extension}`;
 }
 
+async function getAuthenticatedUser(): Promise<
+  | { user: AuthenticatedUser; error: null }
+  | { user: null; error: LaporanActionState }
+> {
+  const cookieStore = await cookies();
+
+  const token = cookieStore.get("auth-token")?.value;
+  const role = cookieStore.get("auth-role")?.value || "";
+  const email =
+    cookieStore.get("auth-email")?.value ||
+    cookieStore.get("auth-username")?.value ||
+    "";
+
+  if (token !== "logged-in") {
+    return {
+      user: null,
+      error: createActionResult(
+        "error",
+        "Login diperlukan",
+        "Silakan masuk terlebih dahulu sebelum mengirim laporan."
+      ),
+    };
+  }
+
+  if (role !== "user") {
+    return {
+      user: null,
+      error: createActionResult(
+        "error",
+        "Akses ditolak",
+        "Hanya user yang dapat mengirim laporan."
+      ),
+    };
+  }
+
+  if (!email) {
+    return {
+      user: null,
+      error: createActionResult(
+        "error",
+        "Email tidak ditemukan",
+        "Sesi login belum memiliki email. Silakan logout lalu login kembali."
+      ),
+    };
+  }
+
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileError) {
+    return {
+      user: null,
+      error: createActionResult(
+        "error",
+        "Profile tidak valid",
+        "Sistem belum berhasil membaca data profile. Silakan coba lagi."
+      ),
+    };
+  }
+
+  return {
+    user: {
+      email,
+      role,
+      userId: profile?.id || null,
+    },
+    error: null,
+  };
+}
+
 export async function createLaporanAction(
   _prevState: LaporanActionState,
   formData: FormData
 ): Promise<LaporanActionState> {
   try {
-    const nama = String(formData.get("nama") || "").trim();
+    const auth = await getAuthenticatedUser();
 
-    const lokasi = String(formData.get("lokasi") || "").trim();
-
-    const deskripsi = String(formData.get("deskripsi") || "").trim();
-
-    const foto = formData.get("foto");
-
-    const latitude = Number(formData.get("latitude"));
-
-    const longitude = Number(formData.get("longitude"));
-
-    const fieldErrors: LaporanFieldErrors = {};
-
-    if (!nama) {
-      fieldErrors.nama = "Nama wajib diisi";
+    if (auth.error) {
+      return auth.error;
     }
 
-    if (!lokasi) {
-      fieldErrors.lokasi = "Lokasi wajib diisi";
-    }
+    const parsed = laporanSchema.safeParse({
+      nama: formData.get("nama"),
+      lokasi: formData.get("lokasi"),
+      deskripsi: formData.get("deskripsi"),
+      latitude: formData.get("latitude"),
+      longitude: formData.get("longitude"),
+      foto: formData.get("foto"),
+    });
 
-    if (!deskripsi) {
-      fieldErrors.deskripsi = "Deskripsi wajib diisi";
-    }
-
-    if (!(foto instanceof File) || foto.size === 0) {
-      fieldErrors.foto = "Foto wajib diupload";
-    }
-
-    if (foto instanceof File && foto.size > MAX_FILE_SIZE) {
-      fieldErrors.foto = "Ukuran foto maksimal 5 MB";
-    }
-
-    if (
-      foto instanceof File &&
-      foto.size > 0 &&
-      !foto.type.startsWith("image/")
-    ) {
-      fieldErrors.foto = "File harus berupa gambar";
-    }
-
-    if (!latitude || !longitude) {
-      fieldErrors.lokasi = "Titik lokasi belum dipilih";
-    }
-
-    if (Object.keys(fieldErrors).length > 0) {
+    if (!parsed.success) {
       return createActionResult(
         "error",
-        "Data belum lengkap",
-        "Lengkapi semua data laporan sebelum mengirim.",
-        fieldErrors
+        "Data belum valid",
+        "Periksa kembali input laporan yang masih salah.",
+        getFieldErrors(parsed.error)
       );
     }
 
-    const validFoto = foto as File;
+    const { nama, lokasi, deskripsi, latitude, longitude, foto } = parsed.data;
 
-    const bytes = await validFoto.arrayBuffer();
-
+    const bytes = await foto.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const safeName = sanitizeFileName(validFoto.name);
-
+    const safeName = sanitizeFileName(foto.name);
     const fileName = `${Date.now()}-${randomUUID()}-${safeName}`;
-
     const filePath = `laporan/${fileName}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from("uploads")
       .upload(filePath, buffer, {
-        contentType: validFoto.type || "image/jpeg",
+        contentType: foto.type || "image/jpeg",
         upsert: false,
       });
 
@@ -139,17 +231,16 @@ export async function createLaporanAction(
         lokasi,
         deskripsi,
         foto: fotoUrl,
+        status: "Menunggu",
         latitude,
         longitude,
-        status: "Menunggu",
+        user_id: auth.user.userId,
       })
       .select("id")
       .single();
 
     if (error) {
-      await supabaseAdmin.storage
-        .from("uploads")
-        .remove([filePath]);
+      await supabaseAdmin.storage.from("uploads").remove([filePath]);
 
       return createActionResult(
         "error",
@@ -158,10 +249,10 @@ export async function createLaporanAction(
       );
     }
 
+    revalidatePath("/");
+    revalidatePath("/contact");
     revalidatePath("/services");
-
     revalidatePath("/admin");
-
     revalidatePath("/admin/peta-laporan");
 
     if (data?.id) {
@@ -174,10 +265,7 @@ export async function createLaporanAction(
       "Terima kasih. Laporan Anda sudah kami terima dan akan segera ditindaklanjuti."
     );
   } catch (error) {
-    console.error(
-      "Server Action createLaporanAction error:",
-      error
-    );
+    console.error("Server Action createLaporanAction error:", error);
 
     return createActionResult(
       "error",

@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabaseServer";
 type Laporan = {
   id: number;
   nama: string;
+  email?: string | null;
   lokasi: string;
   deskripsi: string;
   foto: string;
@@ -11,12 +12,26 @@ type Laporan = {
   created_at?: string;
 };
 
+function getSafeBackHref(back?: string) {
+  if (!back) return "/services";
+  if (!back.startsWith("/")) return "/services";
+  if (back.startsWith("//")) return "/services";
+
+  return back;
+}
+
 export default async function DetailLaporan({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ back?: string }>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
+
+  const backHref = getSafeBackHref(query?.back);
+  const backLabel = backHref === "/" ? "Kembali ke Home" : "Kembali";
 
   const { data, error } = await supabaseAdmin
     .from("laporan")
@@ -33,10 +48,10 @@ export default async function DetailLaporan({
           </h1>
 
           <Link
-            href="/services"
+            href={backHref}
             className="inline-flex items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-bold text-white !no-underline transition-colors duration-300 hover:bg-red-700 hover:text-white"
           >
-            Kembali ke Services
+            {backLabel}
           </Link>
         </div>
       </section>
@@ -57,7 +72,6 @@ export default async function DetailLaporan({
       <div className="mx-auto max-w-6xl">
         <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
           <div>
-            {/* IMAGE */}
             <div className="relative">
               <img
                 src={laporan.foto}
@@ -72,7 +86,6 @@ export default async function DetailLaporan({
               </span>
             </div>
 
-            {/* CONTENT */}
             <div className="p-6 md:p-8">
               <span className="mb-3 inline-block text-sm font-semibold text-red-600">
                 Detail Laporan Parkir
@@ -82,14 +95,22 @@ export default async function DetailLaporan({
                 {laporan.lokasi}
               </h1>
 
-              {/* INFO GRID */}
-              <div className="mb-6 grid gap-4 sm:grid-cols-2">
+              <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="rounded-xl bg-gray-50 p-4">
                   <span className="block text-sm text-gray-500">
                     Nama Pelapor
                   </span>
                   <strong className="text-base text-gray-900">
                     {laporan.nama}
+                  </strong>
+                </div>
+
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <span className="block text-sm text-gray-500">
+                    Email Pelapor
+                  </span>
+                  <strong className="break-all text-base text-gray-900">
+                    {laporan.email || "Email belum tersedia"}
                   </strong>
                 </div>
 
@@ -103,7 +124,6 @@ export default async function DetailLaporan({
                 </div>
               </div>
 
-              {/* DESKRIPSI */}
               <div className="mb-8">
                 <span className="mb-2 block text-sm font-semibold text-gray-700">
                   Deskripsi Laporan
@@ -113,18 +133,17 @@ export default async function DetailLaporan({
                 </p>
               </div>
 
-              {/* ACTION */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
-                  href="/services"
+                  href={backHref}
                   className="inline-flex w-full items-center justify-center rounded-lg border border-red-600 px-5 py-2.5 text-sm font-semibold text-red-600 !no-underline transition-colors duration-300 hover:bg-red-600 hover:text-white hover:!no-underline sm:w-auto"
                 >
-                  Kembali
+                  {backLabel}
                 </Link>
 
                 <Link
                   href="/contact"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline sm:w-auto sm:ml-auto"
+                  className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline sm:ml-auto sm:w-auto"
                 >
                   Buat Laporan Baru
                 </Link>
