@@ -1,5 +1,7 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
+import DeleteLaporanButton from "./DeleteLaporanButton";
 
 type Laporan = {
   id: number;
@@ -10,6 +12,7 @@ type Laporan = {
   foto: string;
   status: string;
   created_at?: string;
+  user_id?: string | null;
 };
 
 function getSafeBackHref(back?: string) {
@@ -18,6 +21,26 @@ function getSafeBackHref(back?: string) {
   if (back.startsWith("//")) return "/services";
 
   return back;
+}
+
+async function getCurrentUserId() {
+  const cookieStore = await cookies();
+
+  const token = cookieStore.get("auth-token")?.value;
+  const role = cookieStore.get("auth-role")?.value;
+  const email = cookieStore.get("auth-email")?.value || "";
+
+  if (token !== "logged-in" || role !== "user" || !email) {
+    return null;
+  }
+
+  const { data } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  return data?.id || null;
 }
 
 export default async function DetailLaporan({
@@ -32,6 +55,8 @@ export default async function DetailLaporan({
 
   const backHref = getSafeBackHref(query?.back);
   const backLabel = backHref === "/" ? "Kembali ke Home" : "Kembali";
+
+  const currentUserId = await getCurrentUserId();
 
   const { data, error } = await supabaseAdmin
     .from("laporan")
@@ -59,6 +84,9 @@ export default async function DetailLaporan({
   }
 
   const laporan = data as Laporan;
+
+  const isOwner = !!currentUserId && laporan.user_id === currentUserId;
+  const canModify = isOwner && laporan.status === "Menunggu";
 
   const statusStyle =
     laporan.status === "Selesai"
@@ -133,6 +161,13 @@ export default async function DetailLaporan({
                 </p>
               </div>
 
+              {isOwner && laporan.status !== "Menunggu" && (
+                <div className="mb-6 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-500">
+                  Laporan sudah {laporan.status}, sehingga tidak bisa diedit
+                  atau dihapus.
+                </div>
+              )}
+
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                   href={backHref}
@@ -141,12 +176,29 @@ export default async function DetailLaporan({
                   {backLabel}
                 </Link>
 
-                <Link
-                  href="/contact"
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline sm:ml-auto sm:w-auto"
-                >
-                  Buat Laporan Baru
-                </Link>
+                <div className="flex flex-col gap-3 sm:ml-auto sm:flex-row">
+                  {canModify && (
+                    <>
+                      <Link
+                        href={`/laporan/${laporan.id}/edit?back=${encodeURIComponent(
+                          backHref
+                        )}`}
+                        className="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 !no-underline transition hover:border-red-600 hover:bg-red-600 hover:text-white hover:!no-underline sm:w-auto"
+                      >
+                        Edit Laporan
+                      </Link>
+
+                      <DeleteLaporanButton id={laporan.id} backHref={backHref} />
+                    </>
+                  )}
+
+                  <Link
+                    href="/contact"
+                    className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline sm:w-auto"
+                  >
+                    Buat Laporan Baru
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

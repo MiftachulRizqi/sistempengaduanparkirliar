@@ -370,7 +370,7 @@ export default async function Home({
                       </span>
 
                       <Link
-                        href={`/laporan/${item.id}`}
+                        href={`/laporan/${item.id}?back=${encodeURIComponent("/")}`}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white !no-underline transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline"
                       >
                         Lihat Detail{" "}
