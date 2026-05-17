@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "../../components/AdminSidebar";
 import StatusBadge from "../../components/StatusBadge";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,7 +11,7 @@ export const revalidate = 0;
 type Laporan = {
   id: number;
   nama: string;
-  email?: string | null;
+  user_id?: string | null;
   lokasi: string;
   deskripsi: string;
   foto: string | null;
@@ -46,6 +47,18 @@ export default async function AdminDetailLaporanPage({
   }
 
   const laporan = data as Laporan;
+
+  let pelaporEmail = "Email belum tersedia";
+
+  if (laporan.user_id) {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", laporan.user_id)
+      .maybeSingle();
+
+    pelaporEmail = profile?.email || "Email belum tersedia";
+  }
 
   return (
     <main className="min-h-screen bg-slate-100">
@@ -90,9 +103,11 @@ export default async function AdminDetailLaporanPage({
 
           <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
             <div className="relative">
-              <img
+              <Image
                 src={laporan.foto || "/image/default.png"}
                 alt={laporan.lokasi}
+                width={1200}
+                height={800}
                 className="h-[260px] w-full object-cover md:h-[360px]"
               />
 
@@ -136,7 +151,7 @@ export default async function AdminDetailLaporanPage({
                     Email Pelapor
                   </p>
                   <p className="break-all text-base font-extrabold text-slate-900">
-                    {laporan.email || "Email belum tersedia"}
+                    {pelaporEmail}
                   </p>
                 </div>
 

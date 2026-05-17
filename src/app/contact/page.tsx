@@ -18,6 +18,7 @@ import {
   initialLaporanActionState,
   type LaporanFieldErrors,
 } from "./actionTypes";
+import Image from "next/image";
 
 const MapPicker = dynamic(() => import("@/components/MapPicker"), {
   ssr: false,
@@ -35,6 +36,13 @@ type AlertState = {
   type: "success" | "info" | "error";
   title: string;
   message: string;
+};
+
+type LocationSuggestion = {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
 };
 
 const INITIAL_FORM_STATE: FormState = {
@@ -64,6 +72,12 @@ export default function Contact() {
 
   const [errors, setErrors] = useState<LaporanFieldErrors>({});
   const [loadingMap, setLoadingMap] = useState(false);
+
+  const [locationSuggestions, setLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [isLocationFocused, setIsLocationFocused] = useState(false);
+
   const [alertState, setAlertState] =
     useState<AlertState>(INITIAL_ALERT_STATE);
 
@@ -92,6 +106,7 @@ export default function Contact() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const closeAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastHandledSubmission = useRef<number | undefined>(undefined);
+  const locationWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const showAlert = useCallback((payload: Omit<AlertState, "open">) => {
     setAlertState({
@@ -168,6 +183,8 @@ export default function Contact() {
         setForm(INITIAL_FORM_STATE);
         setErrors({});
         setPosition([-7.2575, 112.7521]);
+        setLocationSuggestions([]);
+        setIsLocationFocused(false);
 
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -193,6 +210,57 @@ export default function Contact() {
       clearTimeout(actionResultTimer);
     };
   }, [actionState, showAlert, closeAlertAfter]);
+
+    useEffect(() => {
+      const keyword = form.lokasi.trim();
+
+      if (!keyword || keyword.length < 3 || isPending) {
+        return;
+      }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setLoadingMap(true);
+
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            keyword
+          )}&format=json&limit=5&addressdetails=1&countrycodes=id&accept-language=id`
+        );
+
+        const data = await res.json();
+
+        queueMicrotask(() => {
+          setLocationSuggestions(data || []);
+        });
+      } catch {
+        queueMicrotask(() => {
+          setLocationSuggestions([]);
+        });
+      } finally {
+        setLoadingMap(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [form.lokasi, isPending]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        locationWrapperRef.current &&
+        !locationWrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsLocationFocused(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -263,63 +331,23 @@ export default function Contact() {
     }
   };
 
-  const handleSearchLocation = async () => {
-    if (isPending) return;
+  const handleSelectLocationSuggestion = (item: LocationSuggestion) => {
+    const lat = parseFloat(item.lat);
+    const lon = parseFloat(item.lon);
 
-    if (!form.lokasi.trim()) {
-      showAlert({
-        type: "error",
-        title: "Lokasi belum diisi",
-        message:
-          "Masukkan lokasi kejadian terlebih dahulu sebelum mencari di map.",
-      });
+    setForm((prev) => ({
+      ...prev,
+      lokasi: item.display_name,
+    }));
 
-      closeAlertAfter(2500);
-      return;
-    }
+    setPosition([lat, lon]);
+    setLocationSuggestions([]);
+    setIsLocationFocused(false);
 
-    try {
-      setLoadingMap(true);
-
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          form.lokasi
-        )}&format=json`,
-        {
-          headers: {
-            "User-Agent": "pengaduan-parkir-app",
-          },
-        }
-      );
-
-      const data = await res.json();
-
-      if (data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-
-        setPosition([lat, lon]);
-      } else {
-        showAlert({
-          type: "error",
-          title: "Lokasi tidak ditemukan",
-          message:
-            "Coba gunakan nama jalan, kecamatan, atau kota yang lebih spesifik.",
-        });
-
-        closeAlertAfter(3000);
-      }
-    } catch {
-      showAlert({
-        type: "error",
-        title: "Gagal mencari lokasi",
-        message: "Terjadi kendala saat mencari lokasi. Silakan coba lagi.",
-      });
-
-      closeAlertAfter(3000);
-    } finally {
-      setLoadingMap(false);
-    }
+    setErrors((prev) => ({
+      ...prev,
+      lokasi: "",
+    }));
   };
 
   const handleSelectMap = async (lat: number, lon: number) => {
@@ -329,12 +357,7 @@ export default function Contact() {
       setLoadingMap(true);
 
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-        {
-          headers: {
-            "User-Agent": "pengaduan-parkir-app",
-          },
-        }
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
       );
 
       const data = await res.json();
@@ -345,6 +368,8 @@ export default function Contact() {
       }));
 
       setPosition([lat, lon]);
+      setLocationSuggestions([]);
+      setIsLocationFocused(false);
     } catch {
       showAlert({
         type: "error",
@@ -383,9 +408,11 @@ export default function Contact() {
             <div>
               <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-[0_24px_60px_rgba(0,0,0,0.08)]">
                 <div className="flex min-h-[190px] items-center justify-center bg-[radial-gradient(circle_at_top_right,rgba(255,0,4,0.16),transparent_35%),linear-gradient(135deg,#ffffff,rgba(255,0,4,0.08))] p-5 md:min-h-[220px] md:p-6">
-                  <img
+                  <Image
                     src="/image/CONTACT.png"
                     alt="Contact"
+                    width={1200}
+                    height={1200}
                     className="max-h-[170px] w-full object-contain drop-shadow-[0_14px_22px_rgba(0,0,0,0.14)] md:max-h-[200px]"
                   />
                 </div>
@@ -533,7 +560,7 @@ export default function Contact() {
                       transition: "opacity 0.2s ease",
                     }}
                   >
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-4">
                       <div>
                         <label className={labelClass}>Nama Pelapor</label>
                         <input
@@ -552,17 +579,68 @@ export default function Contact() {
                         )}
                       </div>
 
-                      <div>
+                      <div ref={locationWrapperRef} className="relative z-50">
                         <label className={labelClass}>Lokasi Kejadian</label>
+
                         <input
                           type="text"
                           name="lokasi"
                           value={form.lokasi}
-                          onChange={handleChange}
+                          onFocus={() => setIsLocationFocused(true)}
+                          onChange={(event) => {
+                            handleChange(event);
+                            setIsLocationFocused(true);
+                          }}
                           disabled={isPending}
                           className={inputClass(!!errors.lokasi)}
-                          placeholder="Masukkan lokasi"
+                          placeholder="Ketik nama jalan, area, atau kota..."
                         />
+
+                        {isLocationFocused &&
+                          form.lokasi.trim().length >= 3 &&
+                          locationSuggestions.length > 0 && (
+                            <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[9999] overflow-hidden rounded-2xl border border-red-100 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.14)]">
+                              <div className="border-b border-gray-100 px-4 py-3">
+                                <p className="text-sm font-extrabold text-gray-900">
+                                  Rekomendasi Lokasi
+                                </p>
+                                <p className="text-xs font-medium text-gray-500">
+                                  Pilih lokasi agar titik map otomatis
+                                  menyesuaikan.
+                                </p>
+                              </div>
+
+                              <div className="max-h-72 overflow-y-auto p-2">
+                                {locationSuggestions.map((item) => (
+                                  <button
+                                    key={item.place_id}
+                                    type="button"
+                                    onClick={() =>
+                                      handleSelectLocationSuggestion(item)
+                                    }
+                                    className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-gray-50"
+                                  >
+                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                                      <i className="fa-solid fa-location-dot text-sm"></i>
+                                    </span>
+
+                                    <span className="min-w-0">
+                                      <span className="line-clamp-2 text-sm font-extrabold text-gray-800">
+                                        {item.display_name}
+                                      </span>
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                        {loadingMap && form.lokasi.trim().length >= 3 && (
+                          <p className="mt-2 text-xs font-semibold text-gray-500">
+                            Mencari rekomendasi lokasi...
+                          </p>
+                        )}
+
                         {errors.lokasi && (
                           <div className="mt-2 text-sm font-medium text-red-600">
                             {errors.lokasi}
@@ -571,36 +649,10 @@ export default function Contact() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleSearchLocation}
-                      disabled={loadingMap || isPending}
-                      className="
-                        mt-4 mb-4 inline-flex w-full items-center justify-center gap-2
-                        !rounded-xl border border-red-600 bg-white
-                        px-5 py-3 text-sm font-bold text-red-600
-                        shadow-sm transition-all duration-200
-                        hover:-translate-y-0.5
-                        hover:!bg-red-600 hover:!text-white
-                        hover:shadow-[0_16px_30px_rgba(220,38,38,0.35)]
-                        active:scale-[0.98]
-                        disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0
-                      "
-                    >
-                      {loadingMap && (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600" />
-                      )}
-
-                      <span>
-                        {loadingMap
-                          ? "Mencari Lokasi..."
-                          : "Cari Lokasi di Map"}
-                      </span>
-                    </button>
-
-                    <div className="mt-2 mb-4 overflow-hidden rounded-2xl">
+                    <div className="relative z-0 mt-4 mb-4 overflow-hidden rounded-2xl">
                       <MapPicker position={position} onSelect={handleSelectMap} />
                     </div>
+                    
 
                     <div className="mb-3">
                       <label className={labelClass}>Deskripsi Laporan</label>

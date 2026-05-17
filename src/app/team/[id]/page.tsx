@@ -1,5 +1,6 @@
 import team from "@/data/team.json";
 import Link from "next/link";
+import Image from "next/image";
 
 type Team = {
   id: string;
@@ -47,9 +48,11 @@ export default async function TeamDetail({
           <div className="absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-red-100/50"></div>
 
           <div className="relative z-10 mx-auto mb-6 h-40 w-40 rounded-full bg-gradient-to-br from-red-600 to-white p-2 shadow-xl shadow-red-100">
-            <img
+            <Image
               src={member.image}
               alt={member.name}
+              width={500}
+              height={500}
               className="h-full w-full rounded-full border-4 border-white object-cover"
             />
           </div>

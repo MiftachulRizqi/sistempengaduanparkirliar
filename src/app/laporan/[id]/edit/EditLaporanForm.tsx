@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { LatLngExpression } from "leaflet";
 import { updateLaporanAction } from "./actions";
+import Image from "next/image";
 
 const MapPicker = dynamic(() => import("@/components/MapPicker"), {
   ssr: false,
@@ -82,9 +83,11 @@ export default function EditLaporanForm({ laporan, backHref }: Props) {
     <div className="grid gap-6 lg:grid-cols-[0.9fr_1.3fr]">
       <div className="overflow-hidden rounded-[32px] bg-white shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
         <div className="relative">
-          <img
+          <Image
             src={laporan.foto || "/image/default.png"}
             alt={laporan.lokasi}
+            width={1200}
+            height={800}
             className="h-72 w-full object-cover"
           />
 

@@ -2,11 +2,11 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import DeleteLaporanButton from "./DeleteLaporanButton";
+import Image from "next/image";
 
 type Laporan = {
   id: number;
   nama: string;
-  email?: string | null;
   lokasi: string;
   deskripsi: string;
   foto: string;
@@ -85,6 +85,18 @@ export default async function DetailLaporan({
 
   const laporan = data as Laporan;
 
+  let pelaporEmail = "Email belum tersedia";
+
+  if (laporan.user_id) {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", laporan.user_id)
+      .maybeSingle();
+
+    pelaporEmail = profile?.email || "Email belum tersedia";
+  }
+
   const isOwner = !!currentUserId && laporan.user_id === currentUserId;
   const canModify = isOwner && laporan.status === "Menunggu";
 
@@ -101,9 +113,11 @@ export default async function DetailLaporan({
         <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.08)]">
           <div>
             <div className="relative">
-              <img
+              <Image
                 src={laporan.foto}
                 alt={laporan.lokasi}
+                width={1200}
+                height={800}
                 className="h-[280px] w-full object-cover md:h-[360px]"
               />
 
@@ -138,7 +152,7 @@ export default async function DetailLaporan({
                     Email Pelapor
                   </span>
                   <strong className="break-all text-base text-gray-900">
-                    {laporan.email || "Email belum tersedia"}
+                    {pelaporEmail}
                   </strong>
                 </div>
 
@@ -192,12 +206,6 @@ export default async function DetailLaporan({
                     </>
                   )}
 
-                  <Link
-                    href="/contact"
-                    className="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white !no-underline shadow-[0_14px_30px_rgba(220,38,38,0.28)] transition-colors duration-300 hover:bg-red-700 hover:text-white hover:!no-underline sm:w-auto"
-                  >
-                    Buat Laporan Baru
-                  </Link>
                 </div>
               </div>
             </div>

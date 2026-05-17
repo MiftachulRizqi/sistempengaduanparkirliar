@@ -2,6 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import Image from "next/image";
 
 type Laporan = {
   id: number;
@@ -32,9 +33,11 @@ export default function MapComponent({ data }: { data: Laporan[] }) {
             <br />
             {item.deskripsi}
             <br />
-            <img
+            <Image
               src={item.foto}
               alt={`Foto laporan parkir liar di ${item.lokasi}`}
+              width={1200}
+              height={800}
               style={{ width: "100%", borderRadius: "8px", marginTop: "5px" }}
             />
             <br />

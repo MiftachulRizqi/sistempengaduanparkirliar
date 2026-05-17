@@ -1,5 +1,6 @@
 import team from "@/data/team.json";
 import Link from "next/link";
+import Image from "next/image";
 
 type Team = {
   id: string;
@@ -32,9 +33,11 @@ export default function TeamPage() {
             >
               {/* IMAGE */}
               <div className="h-[260px] w-full overflow-hidden">
-                <img
+                <Image
                   src={item.image}
                   alt={item.name}
+                  width={600}
+                  height={600}
                   className="h-full w-full object-cover transition duration-300 hover:scale-105"
                 />
               </div>

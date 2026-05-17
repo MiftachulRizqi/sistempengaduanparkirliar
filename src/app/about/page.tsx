@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { supabaseAdmin } from "@/lib/supabaseServer";
+import Image from "next/image";
 
 type Laporan = {
   status: "Menunggu" | "Diproses" | "Selesai";
@@ -76,9 +77,11 @@ export default async function About() {
 
           {/* IMAGE */}
           <div className="flex justify-center lg:justify-end">
-            <img
+            <Image
               src="/image/ABOUT.png"
               alt="Tentang Pengaduan Parkir Liar"
+              width={1200}
+              height={1200}
               className="max-h-[420px] w-full max-w-[520px] object-contain"
             />
           </div>

@@ -6,6 +6,7 @@ import { useMemo, useState, useTransition } from "react";
 import StatusBadge from "./StatusBadge";
 import UpdateStatusSelect from "./UpdateStatusSelect";
 import { deleteLaporan } from "../actions";
+import Image from "next/image";
 
 type Laporan = {
   id: number;
@@ -303,9 +304,11 @@ export default function AdminReportTable({
                   className="text-sm transition hover:bg-slate-50/70"
                 >
                   <td className="py-4 pl-5 pr-2">
-                    <img
+                    <Image
                       src={item.foto || "/image/default.png"}
                       alt={item.lokasi}
+                      width={80}
+                      height={56}
                       className="h-14 w-20 rounded-2xl object-cover"
                     />
                   </td>

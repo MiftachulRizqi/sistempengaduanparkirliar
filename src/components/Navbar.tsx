@@ -11,6 +11,8 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { logoutAction } from "@/app/login/actions";
+import Image from "next/image";
+
 
 type AuthInfo = {
   isLoggedIn: boolean;
@@ -112,7 +114,13 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-3 text-lg font-bold text-gray-900 !no-underline hover:!no-underline"
         >
-          <img src="/image/logo.png" alt="Logo" className="h-11 w-11" />
+          <Image
+            src="/image/logo.png"
+            alt="Logo"
+            width={44}
+            height={44}
+            className="h-11 w-11"
+          />
 
           <span className="text-sm font-bold sm:text-base">
             PENGADUAN PARKIR LIAR

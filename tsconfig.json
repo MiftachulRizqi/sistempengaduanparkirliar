@@ -14,13 +14,10 @@
     "jsx": "react-jsx",
     "incremental": true,
 
-    // 🔥 ALIAS PATH (PALING AMAN)
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
-    // 🔥 OPTIONAL (kalau pakai leaflet / library tertentu)
     "types": ["leaflet"],
 
     "plugins": [

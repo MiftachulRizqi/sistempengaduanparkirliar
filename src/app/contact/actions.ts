@@ -155,11 +155,22 @@ async function getAuthenticatedUser(): Promise<
     };
   }
 
+  if (!profile?.id) {
+    return {
+      user: null,
+      error: createActionResult(
+        "error",
+        "Profile tidak ditemukan",
+        "Data profile akun belum tersedia. Silakan logout lalu login kembali."
+      ),
+    };
+  }
+
   return {
     user: {
       email,
       role,
-      userId: profile?.id || null,
+      userId: profile.id,
     },
     error: null,
   };

@@ -15,7 +15,7 @@ type UserAccount = {
 };
 
 export default async function AdminPengaturanPage() {
-  const { data, error } = await supabaseAdmin.from("users").select("*");
+  const { data, error } = await supabaseAdmin.from("profiles").select("*");
 
   if (error) {
     console.error("Supabase users error:", error.message);

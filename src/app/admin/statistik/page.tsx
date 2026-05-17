@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import AdminSidebar from "../components/AdminSidebar";
 import StatCard from "../components/StatCard";
-
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -388,9 +388,11 @@ export default async function AdminStatistikPage({
                     hover:shadow-md
                   "
                 >
-                  <img
+                  <Image
                     src={item.foto}
                     alt={item.lokasi}
+                    width={96}
+                    height={64}
                     className="h-16 w-24 rounded-xl object-cover"
                   />
 

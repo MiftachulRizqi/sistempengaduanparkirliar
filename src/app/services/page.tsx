@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabaseServer";
+import Image from "next/image";
 
 type LaporanSaya = {
   id: number | string;
@@ -81,10 +82,12 @@ export default async function Services() {
 
         <div className="mb-14 grid gap-6 md:grid-cols-3">
           <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
-            <img
+            <Image
               src="/image/MAPS.png"
-              className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Maps"
+              width={320}
+              height={320}
+              className="mx-auto mb-4 h-20 w-auto object-contain"
             />
 
             <h5 className="mb-2 text-lg font-bold text-gray-900">
@@ -97,10 +100,12 @@ export default async function Services() {
           </div>
 
           <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
-            <img
+            <Image
               src="/image/KAMERA.png"
-              className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Kamera"
+              width={320}
+              height={320}
+              className="mx-auto mb-4 h-20 w-auto object-contain"
             />
 
             <h5 className="mb-2 text-lg font-bold text-gray-900">
@@ -113,10 +118,12 @@ export default async function Services() {
           </div>
 
           <div className="h-full rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
-            <img
+            <Image
               src="/image/PANTAU STATUS.png"
-              className="mx-auto mb-4 h-20 w-auto object-contain"
               alt="Status"
+              width={320}
+              height={320}
+              className="mx-auto mb-4 h-20 w-auto object-contain"
             />
 
             <h5 className="mb-2 text-lg font-bold text-gray-900">
@@ -162,10 +169,12 @@ export default async function Services() {
                 {item[0]}
               </span>
 
-              <img
+              <Image
                 src={item[1]}
-                className="mx-auto mb-4 h-[70px] w-auto object-contain"
                 alt={item[2]}
+                width={280}
+                height={280}
+                className="mx-auto mb-4 h-[70px] w-auto object-contain"
               />
 
               <h6 className="mb-2 text-base font-bold text-gray-900">
@@ -248,9 +257,11 @@ export default async function Services() {
                   key={item.id}
                   className="flex h-full flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.28)]"
                 >
-                  <img
+                  <Image
                     src={item.foto || "/image/default.png"}
                     alt={item.lokasi}
+                    width={1200}
+                    height={800}
                     className="h-44 w-full object-cover"
                   />
 

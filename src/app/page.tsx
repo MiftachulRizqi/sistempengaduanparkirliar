@@ -5,6 +5,7 @@ import Link from "next/link";
 import MapLaporanClient from "@/components/MapLaporanClient";
 import LaporanSearch from "@/components/LaporanSearch";
 import { supabaseAdmin } from "@/lib/supabaseServer";
+import Image from "next/image";
 
 type Laporan = {
   id: string;
@@ -112,12 +113,13 @@ export default async function Home({
           </div>
 
           <div className="flex justify-center lg:justify-end">
-            <img
+            <Image
               src="/image/Asset 1jukir 1.png"
               alt="Ilustrasi Parkir"
+              width={1200}
+              height={1200}
               className="max-h-[420px] w-full max-w-[520px] object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.12)]"
-            />
-          </div>
+            />          </div>
         </div>
       </section>
 
@@ -134,23 +136,26 @@ export default async function Home({
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_10px_30px_rgba(220,38,38,0.35)]">
-              <img
-                src="/image/MOBIL 1.png"
-                alt="Mewujudkan Kota Tertib"
-                className="mx-auto mb-5 h-28 w-auto object-contain"
-              />
-
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_10px_30px_rgba(220,38,38,0.35)]">
+                <Image
+                  src="/image/MOBIL 1.png"
+                  alt="Mewujudkan Kota Tertib"
+                  width={400}
+                  height={400}
+                  className="mx-auto mb-5 h-28 w-auto object-contain"
+                />
               <h5 className="text-lg font-bold text-gray-900">
                 Mewujudkan Kota Tertib
               </h5>
             </div>
 
             <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_10px_30px_rgba(220,38,38,0.35)]">
-              <img
+              <Image
                 src="/image/ORANG JALAN 1.png"
                 alt="Menjaga Kenyamanan"
+                width={400}
+                height={400}
                 className="mx-auto mb-5 h-28 w-auto object-contain"
               />
 
@@ -160,9 +165,11 @@ export default async function Home({
             </div>
 
             <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.35)]">
-              <img
+              <Image
                 src="/image/MONEY 1.png"
                 alt="Mencegah Pungli"
+                width={400}
+                height={400}
                 className="mx-auto mb-5 h-28 w-auto object-contain"
               />
 
@@ -344,9 +351,11 @@ export default async function Home({
                   }`}
                   key={item.id}
                 >
-                  <img
+                  <Image
                     src={item.foto || "/image/default.png"}
                     alt={item.lokasi}
+                    width={1200}
+                    height={800}
                     className="h-48 w-full object-cover"
                   />
 

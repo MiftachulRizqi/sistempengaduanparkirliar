@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 type LaporanSaya = {
   id: number | string;
@@ -68,9 +69,11 @@ export default function UserReportHistory({ laporan }: Props) {
             key={item.id}
             className="flex h-full flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_18px_45px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(0,0,0,0.08),0_12px_35px_rgba(220,38,38,0.28)]"
           >
-            <img
+            <Image
               src={item.foto || "/image/default.png"}
               alt={item.lokasi}
+              width={1200}
+              height={800}
               className="h-44 w-full object-cover"
             />
 
