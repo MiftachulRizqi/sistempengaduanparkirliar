@@ -13,7 +13,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
 
   const next = params?.next || "/contact";
-  const mode = params?.mode === "register" ? "register" : "login";
+  const mode =
+    params?.mode === "register"
+      ? "register"
+      : params?.mode === "forgot"
+      ? "forgot"
+      : "login";
 
   const cookieStore = await cookies();
   const isLoggedIn = cookieStore.get("auth-token")?.value === "logged-in";

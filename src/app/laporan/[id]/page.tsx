@@ -1,18 +1,22 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { cookies } from "next/headers";
 import Link from "next/link";
+import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import DeleteLaporanButton from "./DeleteLaporanButton";
-import Image from "next/image";
 
 type Laporan = {
   id: number;
   nama: string;
   lokasi: string;
   deskripsi: string;
-  foto: string;
+  foto: string | null;
   status: string;
   created_at?: string;
   user_id?: string | null;
+  pelapor_email?: string | null;
 };
 
 function getSafeBackHref(back?: string) {
@@ -43,6 +47,22 @@ async function getCurrentUserId() {
   return data?.id || null;
 }
 
+async function getPelaporEmail(userId?: string | null) {
+  if (!userId) return "Email belum tersedia";
+
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("email")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error || !data?.email) {
+    return "Email belum tersedia";
+  }
+
+  return data.email;
+}
+
 export default async function DetailLaporan({
   params,
   searchParams,
@@ -62,7 +82,7 @@ export default async function DetailLaporan({
     .from("laporan")
     .select("*")
     .eq("id", Number(id))
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     return (
@@ -85,17 +105,8 @@ export default async function DetailLaporan({
 
   const laporan = data as Laporan;
 
-  let pelaporEmail = "Email belum tersedia";
-
-  if (laporan.user_id) {
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("email")
-      .eq("id", laporan.user_id)
-      .maybeSingle();
-
-    pelaporEmail = profile?.email || "Email belum tersedia";
-  }
+  const pelaporEmail =
+    laporan.pelapor_email || (await getPelaporEmail(laporan.user_id));
 
   const isOwner = !!currentUserId && laporan.user_id === currentUserId;
   const canModify = isOwner && laporan.status === "Menunggu";
@@ -114,7 +125,7 @@ export default async function DetailLaporan({
           <div>
             <div className="relative">
               <Image
-                src={laporan.foto}
+                src={laporan.foto || "/image/default.png"}
                 alt={laporan.lokasi}
                 width={1200}
                 height={800}
@@ -205,7 +216,6 @@ export default async function DetailLaporan({
                       <DeleteLaporanButton id={laporan.id} backHref={backHref} />
                     </>
                   )}
-
                 </div>
               </div>
             </div>

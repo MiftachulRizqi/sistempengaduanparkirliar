@@ -10,7 +10,7 @@ import {
   FaSignOutAlt,
   FaUserCircle,
 } from "react-icons/fa";
-import { logoutAction } from "@/app/login/actions";
+import { logoutAction } from "@/app/login/logoutAction";
 import Image from "next/image";
 
 

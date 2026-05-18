@@ -16,38 +16,28 @@ const laporanSchema = z.object({
     .trim()
     .min(1, "Nama wajib diisi")
     .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ\s'.-]+$/, "Nama tidak boleh mengandung angka"),
-
   lokasi: z.string().trim().min(1, "Lokasi wajib diisi"),
-
-  deskripsi: z
-    .string()
-    .trim()
-    .min(1, "Deskripsi wajib diisi")
-    .min(10, "Deskripsi minimal 10 karakter"),
-
+  deskripsi: z.string().trim().min(10, "Deskripsi minimal 10 karakter"),
   latitude: z.coerce
-    .number({
-      message: "Latitude tidak valid",
-    })
+    .number({ message: "Latitude tidak valid" })
     .refine((value) => value >= -90 && value <= 90, "Latitude tidak valid"),
-
   longitude: z.coerce
-    .number({
-      message: "Longitude tidak valid",
-    })
+    .number({ message: "Longitude tidak valid" })
     .refine((value) => value >= -180 && value <= 180, "Longitude tidak valid"),
-
   foto: z
     .instanceof(File, { message: "Foto wajib diupload" })
     .refine((file) => file.size > 0, "Foto wajib diupload")
     .refine((file) => file.size <= MAX_FILE_SIZE, "Ukuran foto maksimal 5 MB")
-    .refine((file) => file.type.startsWith("image/"), "File harus berupa gambar"),
+    .refine(
+      (file) => file.type.startsWith("image/"),
+      "File harus berupa gambar"
+    ),
 });
 
 type AuthenticatedUser = {
   email: string;
   role: string;
-  userId: string | null;
+  userId: string;
 };
 
 function createActionResult(
@@ -116,7 +106,9 @@ async function getAuthenticatedUser(): Promise<
     };
   }
 
-  if (role !== "user") {
+  const normalizedRole = String(role).trim().toLowerCase();
+
+  if (normalizedRole !== "user") {
     return {
       user: null,
       error: createActionResult(
@@ -140,22 +132,11 @@ async function getAuthenticatedUser(): Promise<
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("profiles")
-    .select("id")
+    .select("id, email")
     .eq("email", email)
     .maybeSingle();
 
-  if (profileError) {
-    return {
-      user: null,
-      error: createActionResult(
-        "error",
-        "Profile tidak valid",
-        "Sistem belum berhasil membaca data profile. Silakan coba lagi."
-      ),
-    };
-  }
-
-  if (!profile?.id) {
+  if (profileError || !profile?.id || !profile.email) {
     return {
       user: null,
       error: createActionResult(
@@ -168,8 +149,8 @@ async function getAuthenticatedUser(): Promise<
 
   return {
     user: {
-      email,
-      role,
+      email: profile.email,
+      role: normalizedRole,
       userId: profile.id,
     },
     error: null,
@@ -246,6 +227,7 @@ export async function createLaporanAction(
         latitude,
         longitude,
         user_id: auth.user.userId,
+        pelapor_email: auth.user.email,
       })
       .select("id")
       .single();

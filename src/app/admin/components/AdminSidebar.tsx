@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { logoutAction } from "@/app/login/actions";
+import { logoutAction } from "@/app/login/logoutAction";
 
 const reportMenus = [
   {

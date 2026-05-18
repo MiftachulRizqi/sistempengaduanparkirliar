@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabaseServer";
 import type { AuthActionState } from "./authTypes";
+import { headers } from "next/headers";
 
 type AuthRole = "user" | "admin";
 
@@ -27,6 +28,14 @@ const registerSchema = z.object({
     .email("Format email tidak valid"),
   password: z.string().trim().min(6, "Password minimal 6 karakter"),
   next: z.string().optional(),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid"),
 });
 
 function normalizeNext(next?: string | null, role?: AuthRole) {
@@ -101,19 +110,6 @@ export async function loginAction(
   const { email, password, next } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
-  if (
-    normalizedEmail === "admin@pengaduan.com" &&
-    password === "ilhamtachulbram"
-  ) {
-    await setAuthCookies({
-      email: normalizedEmail,
-      nama: "Administrator",
-      role: "admin",
-    });
-
-    redirect("/admin");
-  }
-
   const { data: authData, error: authError } =
     await supabaseAdmin.auth.signInWithPassword({
       email: normalizedEmail,
@@ -142,7 +138,8 @@ export async function loginAction(
     };
   }
 
-  const role = profile.role === "admin" ? "admin" : "user";
+  const role: AuthRole =
+    String(profile.role).trim().toLowerCase() === "admin" ? "admin" : "user";
 
   await setAuthCookies({
     email: profile.email,
@@ -176,17 +173,6 @@ export async function registerAction(
 
   const { nama, email, password, next } = parsed.data;
   const normalizedEmail = email.toLowerCase();
-
-  if (normalizedEmail === "admin@pengaduan.com") {
-    return {
-      status: "error",
-      title: "Email tidak tersedia",
-      message: "Email tersebut digunakan untuk admin.",
-      fieldErrors: {
-        email: "Email tersebut tidak tersedia.",
-      },
-    };
-  }
 
   const { data: existingProfile } = await supabaseAdmin
     .from("profiles")
@@ -255,33 +241,46 @@ export async function registerAction(
   redirect(normalizeNext(next, "user"));
 }
 
-export async function logoutAction() {
-  const cookieStore = await cookies();
-
-  cookieStore.set("auth-token", "", {
-    path: "/",
-    maxAge: 0,
+export async function forgotPasswordAction(
+  _prevState: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
   });
 
-  cookieStore.set("auth-role", "", {
-    path: "/",
-    maxAge: 0,
+  if (!parsed.success) {
+    return {
+      status: "error",
+      title: "Reset password gagal",
+      message: "Masukkan email yang valid.",
+      fieldErrors: parsed.error.flatten()
+        .fieldErrors as AuthActionState["fieldErrors"],
+    };
+  }
+
+  const email = parsed.data.email.toLowerCase();
+
+  const headersList = await headers();
+  const origin = headersList.get("origin") || "http://localhost:3000";
+
+  const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
   });
 
-  cookieStore.set("auth-email", "", {
-    path: "/",
-    maxAge: 0,
-  });
+  if (error) {
+    return {
+      status: "error",
+      title: "Reset password gagal",
+      message: error.message || "Email reset password belum berhasil dikirim.",
+    };
+  }
 
-  cookieStore.set("auth-username", "", {
-    path: "/",
-    maxAge: 0,
-  });
-
-  cookieStore.set("auth-name", "", {
-    path: "/",
-    maxAge: 0,
-  });
-
-  redirect("/");
+  return {
+    status: "success",
+    title: "Email reset terkirim",
+    message:
+      "Jika email terdaftar, link reset password telah dikirim. Silakan cek inbox atau folder spam.",
+    fieldErrors: {},
+  };
 }

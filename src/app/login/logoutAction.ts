@@ -8,6 +8,9 @@ export async function logoutAction() {
 
   cookieStore.delete("auth-token");
   cookieStore.delete("auth-role");
+  cookieStore.delete("auth-email");
+  cookieStore.delete("auth-username");
+  cookieStore.delete("auth-name");
 
   redirect("/");
 }
